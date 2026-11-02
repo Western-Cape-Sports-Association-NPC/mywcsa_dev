@@ -10,11 +10,11 @@
 .brand{position:relative;z-index:1;display:flex;align-items:center;gap:14px;min-width:0;color:#fff!important}
 .brandMark{display:grid;place-items:center;min-width:70px;height:52px;padding:0 9px;border:2px solid rgba(255,255,255,.9);font-size:19px;font-weight:800;letter-spacing:.04em;color:#fff}
 .brandCopy{display:flex;flex-direction:column;gap:0;color:#fff}
-.brandCopy strong{font-size:10px;font-weight:600;letter-spacing:.015em;color:#fff}
+.brandCopy strong{max-width:560px;font-size:17px;line-height:1.25;font-weight:700;letter-spacing:0;color:#fff}
 .brandCopy small,.brandCopy b{font-size:13px;line-height:1.1;font-weight:700;color:#fff}
 .brandCopy b{font-size:15px}
 .headerRight{position:relative;z-index:1;display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-end}
-.clock{display:flex;flex-direction:column;text-align:right}.clock strong{font-size:16px;font-weight:700;color:#fff}.clock small{font-size:10px;color:rgba(255,255,255,.86)}
+.clock{display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right;min-width:210px}.clock strong{font-size:25px;line-height:1.1;font-weight:700;letter-spacing:.02em;color:#fff}.clock small{font-size:13px;line-height:1.25;font-weight:600;color:rgba(255,255,255,.95)}
 .authStatus{display:grid;grid-template-columns:9px auto;gap:0 9px;align-items:center}
 .dot{grid-row:span 2;width:8px;height:8px;border-radius:50%;background:#8be0a6}
 .authStatus strong{font-size:11px;font-weight:600;color:#fff}.authStatus small{font-size:10px;color:rgba(255,255,255,.8);text-transform:capitalize}
@@ -60,5 +60,5 @@
 .deniedMark{width:44px;height:44px;display:grid;place-items:center;background:#001484;color:#fff;margin-bottom:10px}
 .deniedActions{display:flex;gap:14px;margin-top:16px;font-weight:600;font-size:13px}.deniedActions a{color:#001484}
 @media(max-width:860px){.header{min-height:84px;padding:8px 12px}.root{padding-top:84px}.brandCopy strong{font-size:10px}.brandCopy small{font-size:14px}.brandCopy b{font-size:16px}.headerRight{gap:9px}.clock{display:none}.side{top:84px}.side button{padding:9px 12px}}
-@media(max-width:560px){.brandMark{min-width:55px;height:44px;font-size:16px}.brand{gap:8px}.brandCopy strong{max-width:190px;font-size:9px}.brandCopy small{font-size:12px}.brandCopy b{font-size:14px}.authStatus{display:none}.headerButton{padding:7px 8px;font-size:10px}}
+@media(max-width:560px){.brandMark{min-width:55px;height:44px;font-size:16px}.brand{gap:8px}.brandCopy strong{max-width:190px;font-size:12px}.clock{min-width:0}.clock strong{font-size:17px}.clock small{font-size:9px}.authStatus{display:none}.headerButton{padding:7px 8px;font-size:10px}}
 @media print{.header,.side,.toolbar,.titleRow,.muted{display:none!important}.root{padding:0;background:#fff}.shell{display:block;padding:0}.card{border:0;background:#fff}}
