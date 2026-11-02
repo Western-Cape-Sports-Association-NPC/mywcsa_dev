@@ -71,9 +71,20 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
   return (
     <div className={s.root}>
       <header className={s.header}>
-        <Link href="/my-apps" className={s.brand}>
-          <span className={s.logoWrap}><img src="/mywcsa-logo.png" alt="MyWCSA GovApps" /></span>
-          <span><strong>MyWCSA <b>CAMS</b></strong><small>CENTRALISED ADMINISTRATIVE MANAGEMENT SYSTEM</small></span>
+        <div className={s.cityscape} aria-hidden="true">
+          <svg viewBox="0 0 760 112" preserveAspectRatio="xMidYMax meet">
+            <path d="M0 86 L42 72 76 78 115 53 152 67 190 43 224 61 260 29 296 55 330 46 364 63 402 38 438 59 474 49 510 68 548 41 580 58 620 36 660 60 700 48 760 67 V112 H0Z" fill="currentColor" opacity=".20"/>
+            <path d="M0 94 L42 80 76 86 115 61 152 75 190 51 224 69 260 37 296 63 330 54 364 71 402 46 438 67 474 57 510 76 548 49 580 66 620 44 660 68 700 56 760 75" fill="none" stroke="currentColor" strokeWidth="2" opacity=".8"/>
+            <path d="M28 112V88h18v24m18 0V79h22v33m28 0V91h18v21m38 0V83h26v29m30 0V95h15v17m35 0V77h24v35m28 0V89h18v23m32 0V80h25v32m30 0V92h20v20m35 0V76h25v36m30 0V88h20v24m35 0V82h26v30m32 0V94h18v18m34 0V80h23v32" fill="none" stroke="currentColor" strokeWidth="2" opacity=".45"/>
+          </svg>
+        </div>
+        <Link href="/cams" className={s.brand}>
+          <span className={s.brandMark}>CAMS</span>
+          <span className={s.brandCopy}>
+            <strong>Centralised Administrative Management System</strong>
+            <small>Western Cape</small>
+            <b>Sports Association</b>
+          </span>
         </Link>
         <div className={s.headerRight}>
           <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" })}</strong><small>{now.toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}{weather ? " · " + weather : ""}</small></span>
@@ -82,7 +93,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
         </div>
       </header>
       <div className={s.shell}>
-        <nav className={s.side} aria-label="CAMS">
+        <nav className={s.side} aria-label="CAMS navigation">
           {nav.map(v => <button key={v} className={view === v ? s.on : ""} onClick={() => go(v)}><Icon name={v} />{labels[v]}</button>)}
         </nav>
         <main className={s.main}>
