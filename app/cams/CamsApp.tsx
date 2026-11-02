@@ -82,12 +82,10 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
           <span className={s.brandMark}>CAMS</span>
           <span className={s.brandCopy}>
             <strong>Centralised Administrative Management System</strong>
-            <small>Western Cape</small>
-            <b>Sports Association</b>
           </span>
         </Link>
         <div className={s.headerRight}>
-          <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" })}</strong><small>{now.toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}{weather ? " · " + weather : ""}</small></span>
+          <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false })}</strong><small>{now.toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "2-digit", month: "long", year: "numeric" })}{weather ? " · " + weather : ""}</small></span>
           <span className={s.authStatus}><i className={s.dot} /><strong>{me.full_name}</strong><small>{me.role.replace("_", " ")}</small></span>
           <Link href="/my-apps" className={s.headerButton}>← GovApps</Link>
         </div>
