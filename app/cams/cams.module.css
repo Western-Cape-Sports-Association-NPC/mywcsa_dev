@@ -90,3 +90,32 @@
 .workspaceNotice{margin:0 0 12px;padding:12px 14px;border-left:3px solid var(--wcg);background:#fff;border-top:1px solid #d4d7dd;border-right:1px solid #d4d7dd;border-bottom:1px solid #d4d7dd}
 .workspaceNotice strong{display:block;color:#26364e;font-size:11px;font-weight:700}
 .workspaceNotice p{margin:4px 0 0;color:#6d7888;font-size:10px;line-height:1.5}
+
+/* Refined CAMS presentation: clear horizontal navigation and a lighter WCG header */
+.header{min-height:82px;padding:10px clamp(16px,2.8vw,36px);overflow:hidden;background:linear-gradient(112deg,#00116f 0%,#001484 52%,#102b91 100%);border-bottom:3px solid #b8c9ee;box-shadow:0 2px 8px rgba(18,36,78,.12)}
+.header::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;background:repeating-linear-gradient(0deg,transparent 0 17px,rgba(226,237,255,.24) 17px 18px),repeating-linear-gradient(90deg,transparent 0 42px,rgba(226,237,255,.18) 42px 43px),linear-gradient(120deg,transparent 0 55%,rgba(196,216,255,.22) 55.1%,transparent 55.5% 68%,rgba(196,216,255,.16) 68.1%,transparent 68.5%)}
+.brand,.headerRight{position:relative;z-index:1}
+.brand{gap:13px}
+.brandMark{width:48px;height:48px;border:1px solid rgba(239,245,255,.9);background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 4px rgba(255,255,255,.035);font-size:21px;letter-spacing:.04em}
+.brandCopy strong{font-size:16px;letter-spacing:.01em}
+.brandCopy small{color:#dce7ff;letter-spacing:.16em}
+.headerRight{gap:22px}
+.clock{min-width:150px;align-items:flex-end;gap:3px}
+.clock strong{font-size:32px;line-height:1;font-weight:750;letter-spacing:.025em;font-variant-numeric:tabular-nums}
+.clock small{font-size:10px;line-height:1.25;color:#e4ebff;letter-spacing:.035em;white-space:nowrap}
+.authStatus{padding-left:15px;border-left:1px solid rgba(225,235,255,.25)}
+.headerButton{padding:8px 13px;border-color:rgba(232,239,255,.65);background:rgba(255,255,255,.07);transition:background .15s ease,border-color .15s ease}
+.headerButton:hover{background:rgba(255,255,255,.16);border-color:#fff}
+.moduleNav{position:sticky;top:0;z-index:18;display:flex;align-items:stretch;gap:3px;padding:7px clamp(10px,1.8vw,22px) 0;background:#fff;border-bottom:1px solid #cfd5df;box-shadow:0 2px 5px rgba(24,39,70,.055);scrollbar-width:thin}
+.moduleTab,.moduleActive{position:relative;min-height:45px;padding:0 15px;border:0;border-right:0;border-radius:5px 5px 0 0;background:transparent;color:#4a566a;font-size:10px;font-weight:650;letter-spacing:.012em;transition:background .15s ease,color .15s ease}
+.moduleTab:hover{background:#f0f3fa;color:var(--wcg)}
+.moduleActive{background:#edf1fb;color:var(--wcg);box-shadow:inset 0 -3px 0 var(--wcg)}
+.moduleActive::before{content:"";position:absolute;left:12px;right:12px;top:0;height:2px;background:#5274d5;border-radius:0 0 2px 2px}
+.sectionNav{gap:4px;padding:5px 8px;background:#e9edf3;border:1px solid #d6dbe4;border-radius:5px;scrollbar-width:thin}
+.sectionTab,.sectionActive{min-height:34px;padding:0 13px;border:1px solid transparent;border-radius:4px;background:transparent;color:#505d70;font-size:10px;font-weight:600;transition:all .15s ease}
+.sectionTab:hover{background:#fff;border-color:#d9dfeb;color:var(--wcg)}
+.sectionActive{background:#fff;border-color:#d6ddeb;color:var(--wcg);box-shadow:0 1px 3px rgba(30,48,84,.08),inset 0 -2px 0 var(--wcg)}
+.moduleIntro{padding-top:19px}
+.moduleIntro h1{font-size:20px;letter-spacing:-.015em}
+@media(max-width:900px){.headerRight{gap:12px}.clock{display:flex;min-width:120px}.clock strong{font-size:26px}.clock small{font-size:9px}}
+@media(max-width:560px){.header{min-height:68px;padding:7px 10px}.brandMark{width:35px;height:35px;font-size:16px}.brandCopy strong{max-width:190px;font-size:10px}.brandCopy small{font-size:6px}.headerRight{gap:8px}.clock{min-width:90px}.clock strong{font-size:21px}.clock small{font-size:7px}.authStatus{display:none}.moduleNav{padding-left:6px;padding-right:6px}.moduleTab,.moduleActive{min-height:39px;padding:0 10px;font-size:9px}.sectionNav{gap:2px;padding:4px}.sectionTab,.sectionActive{padding:0 9px;min-height:31px;font-size:9px}}
