@@ -1,143 +1,151 @@
 "use client";
+
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CamsData, CamsStaff, Row } from "@/lib/cams/access";
+import { visibleModules } from "./module-catalog";
 import s from "./cams.module.css";
 
-type View = "dash" | "organisations" | "schools" | "persons" | "assets" | "staff" | "audit" | "docs";
 type Field = [key: string, label: string, options?: string[]];
 const roles = ["system_admin", "registrar", "approver", "org_admin", "org_user", "read_only"];
 const forms: Record<string, { table: string; fields: Field[] }> = {
-  organisations: { table: "organisations", fields: [["name", "Organisation name"], ["type", "Type", ["school", "club", "department", "directorate", "initiative", "other"]], ["contact_email", "Contact email"]] },
-  assets: { table: "assets", fields: [["tag", "Asset tag"], ["description", "Description"], ["location", "Location"], ["condition", "Condition"]] },
-  staff: { table: "staff_access", fields: [["email", "Staff email"], ["full_name", "Full name"], ["role", "Role", roles], ["directorate", "Directorate"]] },
+  "Organisations": { table: "organisations", fields: [["name", "Organisation name"], ["type", "Type", ["school", "club", "department", "directorate", "initiative", "other"]], ["contact_email", "Contact email"]] },
+  "Asset Register": { table: "assets", fields: [["tag", "Asset tag"], ["description", "Description"], ["location", "Location"], ["condition", "Condition"]] },
+  "Staff List": { table: "staff_access", fields: [["email", "Staff email"], ["full_name", "Full name"], ["role", "Role", roles], ["directorate", "Directorate"]] },
 };
-const labels: Record<string, string> = { dash: "Dashboard", organisations: "Organisations", schools: "Schools", persons: "Learners & Players", assets: "Assets", staff: "Staff & Roles", audit: "Audit Log", docs: "Documents" };
-const icons: Record<string, string> = {
-  dash: "M3 3h8v8H3z M13 3h8v5h-8z M13 10h8v11h-8z M3 13h8v8H3z",
-  organisations: "M4 21V8l8-5 8 5v13 M9 21v-6h6v6",
-  schools: "M2 9l10-5 10 5-10 5z M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5",
-  persons: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M2 21a7 7 0 0 1 14 0 M17 4a4 4 0 0 1 0 7 M22 21a7 7 0 0 0-4-6",
-  assets: "M3 7l9-4 9 4v10l-9 4-9-4z M3 7l9 4 9-4 M12 11v10",
-  staff: "M12 3l8 3v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6z M9 12l2 2 4-4",
-  audit: "M9 3h6l5 5v13H4V3z M8 13h8 M8 17h8",
-  docs: "M6 2h9l5 5v15H6z M14 2v6h6 M9 13h6 M9 17h6",
+const toText = (v: unknown) => v === null || v === undefined ? "—" : typeof v === "boolean" ? (v ? "Yes" : "No") : String(v).replace("T", " ").slice(0, 19);
+const pageDataKey: Record<string, keyof Pick<CamsData, "orgs" | "schools" | "persons" | "assets" | "staff" | "audit">> = {
+  "Organisations": "orgs", "Organisation List": "orgs", "School List": "schools", "Schools": "schools",
+  "All Participants List": "persons", "Learner List": "persons", "Staff List": "staff", "Asset Register": "assets",
+  "Audit Log": "audit",
 };
-function Icon({ name }: { name: string }) {
-  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icons[name] || icons.dash} /></svg>;
-}
-const wx = (c: number) => c === 0 ? "Clear" : c < 4 ? "Partly cloudy" : c < 50 ? "Fog" : c < 70 ? "Rain" : c < 90 ? "Showers" : "Storms";
-const text = (v: unknown) => v === null || v === undefined ? "—" : typeof v === "boolean" ? (v ? "Yes" : "No") : String(v).replace("T", " ").slice(0, 19);
 
 export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData }) {
   const router = useRouter();
-  const writer = ["system_admin", "registrar", "approver"].includes(me.role);
   const admin = me.role === "system_admin";
-  const nav: View[] = ["dash", "organisations", "schools", ...(writer ? ["persons" as View] : []), "assets", ...(admin ? ["staff" as View, "audit" as View] : []), "docs"];
-  const [view, setView] = useState<View>("dash");
-  const [now, setNow] = useState(new Date());
-  const [weather, setWeather] = useState("");
-  const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
-  const [vals, setVals] = useState<Record<string, string>>({});
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [tpl, setTpl] = useState("Affiliation certificate");
-  const [font, setFont] = useState("Helvetica");
-  const [org, setOrg] = useState("");
+  const writer = ["system_admin", "registrar", "approver"].includes(me.role);
+  const modules = visibleModules(me.role);
+  const [moduleId, setModuleId] = useState("home");
+  const [sectionTitle, setSectionTitle] = useState("Home");
+  const [activePage, setActivePage] = useState("My Dashboard");
+  const [query, setQuery] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [now] = useState(() => new Date());
 
-  useEffect(() => { const t = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(t); }, []);
-  useEffect(() => { fetch("/api/cams/weather").then(r => r.json()).then(j => j.temperature != null && setWeather(Math.round(j.temperature) + "°C · " + wx(j.weatherCode))).catch(() => {}); }, []);
+  const currentModule = modules.find(m => m.id === moduleId) || modules[0];
+  const currentSection = currentModule.sections.find(x => x.title === sectionTitle) || currentModule.sections[0];
+  const selectedKey = pageDataKey[activePage];
+  const sourceRows = selectedKey ? data[selectedKey] as Row[] : [];
+  const rows = useMemo(() => sourceRows.filter(row => !query || Object.values(row).join(" ").toLowerCase().includes(query.toLowerCase())), [sourceRows, query]);
+  const columns = rows[0] ? Object.keys(rows[0]) : [];
+  const form = forms[activePage];
+  const countFor = (key: string) => {
+    if (key === "orgs") return data.counts.organisations;
+    if (key === "schools") return data.counts.schools;
+    if (key === "persons") return data.counts.persons;
+    if (key === "assets") return data.counts.assets;
+    if (key === "staff") return data.counts.staff;
+    return data.audit.length;
+  };
+  const metrics = [
+    ["Organisations", data.counts.organisations, "Organisations"],
+    ["Schools", data.counts.schools, "School List"],
+    ["People", data.counts.persons, "All Participants List"],
+    ["Assets", data.counts.assets, "Asset Register"],
+    ["Staff accounts", data.counts.staff, "Staff List"],
+  ];
 
-  const lists: Record<string, Row[]> = { organisations: data.orgs, schools: data.schools, persons: data.persons, assets: data.assets, staff: data.staff, audit: data.audit };
-  const rows = (lists[view] || []).filter(r => !q || Object.values(r).join(" ").toLowerCase().includes(q.toLowerCase()));
-  const cols = rows[0] ? Object.keys(rows[0]) : [];
-  const types = data.orgs.reduce<Record<string, number>>((a, o) => { const k = String(o.type); a[k] = (a[k] || 0) + 1; return a; }, {});
-  const max = Math.max(1, ...Object.values(types));
-  const kpis: [string, number, View][] = [["Organisations", data.counts.organisations, "organisations"], ["Schools", data.counts.schools, "schools"], ["Learners & players", data.counts.persons, "persons"], ["Assets", data.counts.assets, "assets"], ["Staff", data.counts.staff, "staff"]];
-  const go = (v: View) => { setView(v); setQ(""); setOpen(false); setErr(""); };
-
+  function selectModule(id: string) {
+    const next = modules.find(m => m.id === id) || modules[0];
+    setModuleId(next.id);
+    setSectionTitle(next.sections[0]?.title || "Overview");
+    setActivePage(next.sections[0]?.pages[0] || next.title);
+    setQuery("");
+    setFormOpen(false);
+    setError("");
+  }
+  function selectSection(title: string) {
+    const section = currentModule.sections.find(x => x.title === title);
+    setSectionTitle(title);
+    setActivePage(section?.pages[0] || title);
+    setQuery("");
+    setFormOpen(false);
+    setError("");
+  }
+  function selectPage(page: string) {
+    setActivePage(page);
+    setQuery("");
+    setFormOpen(false);
+    setError("");
+  }
   async function save() {
-    const f = forms[view]; if (!f) return;
-    setBusy(true); setErr("");
-    const row: Record<string, string> = {}; f.fields.forEach(([k, , o]) => { const v = vals[k] || (o ? o[0] : ""); if (v) row[k] = v; });
-    const r = await fetch("/api/cams/records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ table: f.table, row }) });
-    setBusy(false);
-    if (!r.ok) { setErr((await r.json().catch(() => ({}))).error || "Could not save."); return; }
-    setOpen(false); setVals({}); router.refresh();
+    if (!form) return;
+    setSaving(true); setError("");
+    const row: Record<string, string> = {};
+    form.fields.forEach(([key, , options]) => {
+      const value = values[key] || (options ? options[0] : "");
+      if (value) row[key] = value;
+    });
+    try {
+      const response = await fetch("/api/cams/records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ table: form.table, row }) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "The record could not be saved.");
+      setFormOpen(false); setValues({}); router.refresh();
+    } catch (e) { setError(e instanceof Error ? e.message : "The record could not be saved."); }
+    finally { setSaving(false); }
   }
 
   return (
     <div className={s.root}>
       <header className={s.header}>
-        <div className={s.cityscape} aria-hidden="true">
-          <svg viewBox="0 0 760 112" preserveAspectRatio="xMidYMax meet">
-            <path d="M0 86 L42 72 76 78 115 53 152 67 190 43 224 61 260 29 296 55 330 46 364 63 402 38 438 59 474 49 510 68 548 41 580 58 620 36 660 60 700 48 760 67 V112 H0Z" fill="currentColor" opacity=".20"/>
-            <path d="M0 94 L42 80 76 86 115 61 152 75 190 51 224 69 260 37 296 63 330 54 364 71 402 46 438 67 474 57 510 76 548 49 580 66 620 44 660 68 700 56 760 75" fill="none" stroke="currentColor" strokeWidth="2" opacity=".8"/>
-            <path d="M28 112V88h18v24m18 0V79h22v33m28 0V91h18v21m38 0V83h26v29m30 0V95h15v17m35 0V77h24v35m28 0V89h18v23m32 0V80h25v32m30 0V92h20v20m35 0V76h25v36m30 0V88h20v24m35 0V82h26v30m32 0V94h18v18m34 0V80h23v32" fill="none" stroke="currentColor" strokeWidth="2" opacity=".45"/>
-          </svg>
-        </div>
-        <Link href="/cams" className={s.brand}>
-          <span className={s.brandMark}>CAMS</span>
-          <span className={s.brandCopy}>
-            <strong>Centralised Administrative Management System</strong>
-          </span>
+        <Link href="/cams" className={s.brand} aria-label="CAMS home">
+          <span className={s.brandMark}>C</span>
+          <span className={s.brandCopy}><strong>Centralised Administrative Management System</strong><small>SPORT, ARTS AND CULTURE · WESTERN CAPE</small></span>
         </Link>
         <div className={s.headerRight}>
-          <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false })}</strong><small>{now.toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "long", day: "2-digit", month: "long", year: "numeric" })}{weather ? " · " + weather : ""}</small></span>
-          <span className={s.authStatus}><i className={s.dot} /><strong>{me.full_name}</strong><small>{me.role.replace("_", " ")}</small></span>
-          <Link href="/my-apps" className={s.headerButton}>← GovApps</Link>
+          <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false })}</strong><small>{now.toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "short", day: "2-digit", month: "short", year: "numeric" })} · SAST</small></span>
+          <span className={s.authStatus}><i className={s.dot} /><strong>{me.full_name}</strong><small>{admin ? "System Owner" : me.role.replaceAll("_", " ")}</small></span>
+          <Link href="/my-apps" className={s.headerButton}>GovApps</Link>
         </div>
       </header>
-      <div className={s.shell}>
-        <nav className={s.side} aria-label="CAMS navigation">
-          {nav.map(v => <button key={v} className={view === v ? s.on : ""} onClick={() => go(v)}><Icon name={v} />{labels[v]}</button>)}
+
+      <nav className={s.moduleNav} aria-label="CAMS modules">
+        {modules.map(module => <button key={module.id} type="button" onClick={() => selectModule(module.id)} className={module.id === currentModule.id ? s.moduleActive : s.moduleTab}>{module.short}</button>)}
+      </nav>
+
+      <div className={s.workspace}>
+        <div className={s.moduleIntro}>
+          <div><span className={s.eyebrow}>WCSA CAMS / {currentModule.title.toUpperCase()}</span><h1>{currentModule.title}</h1><p>{currentModule.description}</p></div>
+          <div className={s.moduleMeta}><span className={s.secureMark}>●</span> STAFF WORKSPACE <b>·</b> {admin ? "SYSTEM OWNER" : me.directorate || "AUTHORISED STAFF"}</div>
+        </div>
+
+        <nav className={s.sectionNav} aria-label={currentModule.title + " sections"}>
+          {currentModule.sections.map(section => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionActive : s.sectionTab}>{section.title}</button>)}
         </nav>
+
         <main className={s.main}>
-          <div className={s.titleRow}><div><span className={s.eyebrow}>MYWCSA GOVAPPS · CAMS</span><h1>{labels[view]}</h1></div></div>
-          {view === "dash" && <>
-            <div className={s.kpis}>{kpis.filter(k => k[2] !== "persons" || writer).filter(k => k[2] !== "staff" || admin).map(([l, n, v]) => <button key={l} className={s.kpi} onClick={() => go(v)}><span>{l}</span><b>{n}</b></button>)}</div>
-            <div className={s.cols}>
-              <section className={s.card}><h2>Organisations by type</h2>
-                {Object.keys(types).length ? Object.entries(types).map(([k, n]) => <div key={k} className={s.bar}><span>{k}</span><i style={{ width: (n / max * 100) + "%" }} /><em>{n}</em></div>) : <p className={s.muted}>No organisations registered yet. Add the first one under Organisations.</p>}
-              </section>
-              <section className={s.card}><h2>Recent activity</h2>
-                {admin ? (data.audit.length ? data.audit.slice(0, 8).map((a, i) => <p key={i} className={s.act}><b>{text(a.action)}</b> {text(a.table_name)} · {text(a.actor_email)}<small>{text(a.at)}</small></p>) : <p className={s.muted}>No activity recorded yet.</p>) : <p className={s.muted}>Activity is visible to System Administrators.</p>}
-              </section>
+          {currentModule.id === "home" && sectionTitle === "Home" && activePage === "My Dashboard" ? <>
+            <div className={s.pageHeading}><div><span className={s.eyebrow}>OVERVIEW</span><h2>My Dashboard</h2><p>Your WCSA administrative workspace at a glance.</p></div><span className={s.dateLabel}>{now.toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Johannesburg" })}</span></div>
+            <div className={s.metricGrid}>{metrics.filter(([, , page]) => page !== "Staff List" || admin).filter(([, , page]) => page !== "All Participants List" || writer).map(([label, value, page]) => <button key={String(label)} className={s.metricCard} onClick={() => { selectModule(page === "Staff List" ? "staff" : page === "School List" ? "schools" : page === "All Participants List" ? "people" : page === "Asset Register" ? "facilities" : "home"); if (page === "Organisations") { setSectionTitle("Home"); setActivePage("Organisations"); } else if (page === "School List") { setSectionTitle("School Register"); setActivePage(page); } else if (page === "All Participants List") { setSectionTitle("Participants"); setActivePage(page); } else if (page === "Asset Register") { setSectionTitle("Equipment and Assets"); setActivePage(page); } else if (page === "Staff List") { setSectionTitle("Staff Register"); setActivePage(page); } }}><span>{String(label)}</span><strong>{Number(value).toLocaleString("en-ZA")}</strong><small>Open register →</small></button>)}</div>
+            <div className={s.dashboardGrid}>
+              <section className={s.panel}><div className={s.panelHeading}><div><h3>Workspace modules</h3><p>Open a module to access its sections and registers.</p></div><span>{modules.length} MODULES</span></div><div className={s.moduleCards}>{modules.map(m => <button key={m.id} onClick={() => selectModule(m.id)} className={s.moduleCard}><span className={s.moduleIcon}>{m.short.slice(0,1)}</span><span><strong>{m.title}</strong><small>{m.sections.length} sections · {m.sections.reduce((n, x) => n + x.pages.length, 0)} work areas</small></span><b>›</b></button>)}</div></section>
+              <section className={s.panel}><div className={s.panelHeading}><div><h3>Recent administrative activity</h3><p>Latest recorded system actions.</p></div><span>LIVE RECORDS</span></div>{admin && data.audit.length ? data.audit.slice(0,8).map((item,i) => <div className={s.activityRow} key={i}><b>{toText(item.action)}</b><span>{toText(item.table_name)} · {toText(item.actor_email)}</span><small>{toText(item.at)}</small></div>) : <div className={s.emptyState}><strong>No activity to display</strong><p>New activity will appear here when actions are recorded in CAMS.</p></div>}</section>
             </div>
+          </> : <>
+            <div className={s.pageHeading}><div><span className={s.eyebrow}>{currentModule.title.toUpperCase()} / {currentSection.title.toUpperCase()}</span><h2>{activePage}</h2><p>{currentSection.pages.length} work areas in this section.</p></div><span className={s.dateLabel}>{currentSection.title}</span></div>
+            <div className={s.pageTabs} aria-label="Pages in section">{currentSection.pages.map(page => <button key={page} onClick={() => selectPage(page)} className={activePage === page ? s.pageActive : s.pageTab}>{page}</button>)}</div>
+            {selectedKey ? <section className={s.panel}>
+              <div className={s.panelHeading}><div><h3>{activePage}</h3><p>{countFor(selectedKey).toLocaleString("en-ZA")} records in the connected register.</p></div>{form && (admin || writer) && <button className={s.primary} onClick={() => setFormOpen(!formOpen)}>{formOpen ? "Close form" : "+ Add record"}</button>}</div>
+              <div className={s.tableToolbar}><input aria-label={"Search " + activePage} placeholder={"Search " + activePage.toLowerCase() + "…"} value={query} onChange={e => setQuery(e.target.value)} /><span>{rows.length} shown</span><button onClick={() => window.print()} className={s.outlineButton}>Print / PDF</button></div>
+              {formOpen && form && <div className={s.formGrid}>{form.fields.map(([key,label,options]) => <label key={key}>{label}{options ? <select value={values[key] || options[0]} onChange={e => setValues(v => ({...v,[key]:e.target.value}))}>{options.map(option => <option key={option}>{option}</option>)}</select> : <input value={values[key] || ""} onChange={e => setValues(v => ({...v,[key]:e.target.value}))} />}</label>)}<button className={s.primary} disabled={saving} onClick={save}>{saving ? "Saving…" : "Save record"}</button>{error && <p className={s.error}>{error}</p>}</div>}
+              <div className={s.tableWrap}>{rows.length ? <table><thead><tr>{columns.map(col => <th key={col}>{col.replace(/_/g," ")}</th>)}</tr></thead><tbody>{rows.map((row,i) => <tr key={i}>{columns.map(col => <td key={col}>{toText(row[col])}</td>)}</tr>)}</tbody></table> : <div className={s.emptyState}><strong>No matching records</strong><p>There are currently no records to display for this register, or your search returned no matches.</p></div>}</div>
+            </section> : <section className={s.panel}><div className={s.panelHeading}><div><h3>{currentSection.title}</h3><p>Select a work area to open its page.</p></div><span>{currentSection.pages.length} PAGES</span></div><div className={s.pageGrid}>{currentSection.pages.map((page,index) => <button key={page} className={s.pageCard} onClick={() => selectPage(page)}><span className={s.pageCardIcon}>{String(index+1).padStart(2,"0")}</span><span><strong>{page}</strong><small>Open workspace</small></span><b>›</b></button>)}</div></section>}
           </>}
-          {view !== "dash" && view !== "docs" && <section className={s.card}>
-            <div className={s.toolbar}>
-              <input placeholder={"Search " + labels[view].toLowerCase() + "…"} value={q} onChange={e => setQ(e.target.value)} />
-              <span className={s.muted}>{rows.length} record{rows.length === 1 ? "" : "s"}</span>
-              {forms[view] && (view === "staff" ? admin : writer) && <button className={s.primary} onClick={() => setOpen(!open)}>{open ? "Cancel" : "+ New"}</button>}
-            </div>
-            {open && forms[view] && <div className={s.form}>
-              {forms[view].fields.map(([k, l, o]) => <label key={k}>{l}{o ? <select value={vals[k] || o[0]} onChange={e => setVals({ ...vals, [k]: e.target.value })}>{o.map(x => <option key={x}>{x}</option>)}</select> : <input value={vals[k] || ""} onChange={e => setVals({ ...vals, [k]: e.target.value })} />}</label>)}
-              <button className={s.primary} disabled={busy} onClick={save}>{busy ? "Saving…" : "Save record"}</button>
-              {err && <p className={s.error}>{err}</p>}
-            </div>}
-            <div className={s.scroll}>
-              {rows.length ? <table><thead><tr>{cols.map(c => <th key={c}>{c.replace(/_/g, " ")}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i}>{cols.map(c => <td key={c}>{c === "status" || c === "role" ? <span className={s.badge}>{text(r[c])}</span> : text(r[c])}</td>)}</tr>)}</tbody></table> : <p className={s.muted}>No records found.</p>}
-            </div>
-          </section>}
-          {view === "docs" && <section className={s.card}>
-            <div className={s.toolbar}>
-              <select value={tpl} onChange={e => setTpl(e.target.value)}><option>Affiliation certificate</option><option>Registration confirmation</option><option>Asset transfer form</option></select>
-              <select value={org} onChange={e => setOrg(e.target.value)}><option value="">Select organisation</option>{data.orgs.map(o => <option key={String(o.ref)} value={String(o.name)}>{String(o.name)}</option>)}</select>
-              <select value={font} onChange={e => setFont(e.target.value)}><option>Helvetica</option><option>Century Gothic</option></select>
-              <button className={s.primary} onClick={() => window.print()}>Print / Save as PDF</button>
-            </div>
-            <article className={s.doc} style={{ fontFamily: font === "Helvetica" ? "Helvetica, Arial, sans-serif" : "'Century Gothic', CenturyGothic, AppleGothic, sans-serif" }}>
-              <h3>Western Cape Sports Association NPC</h3>
-              <h4>{tpl}</h4>
-              <p>{org ? "Issued to " + org + "." : "Select an organisation to complete this document."}</p>
-              <p>Date: {now.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" })}</p>
-              <p>Issued by: {me.full_name}, {me.directorate || "WCSA"}</p>
-            </article>
-            <p className={s.muted}>Documents export in Helvetica or Century Gothic only. SharePoint filing follows once the document store is connected.</p>
-          </section>}
+          <footer className={s.footer}><span>WESTERN CAPE SPORTS ASSOCIATION NPC · CAMS</span><span>Access-controlled internal system · All times SAST</span></footer>
         </main>
       </div>
     </div>
