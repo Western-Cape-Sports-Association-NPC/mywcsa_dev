@@ -124,9 +124,19 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
           <div className={s.moduleMeta}><span className={s.secureMark}>●</span> STAFF WORKSPACE <b>·</b> {admin ? "SYSTEM OWNER" : me.directorate || "AUTHORISED STAFF"}</div>
         </div>
 
-        <nav className={s.sectionNav} aria-label={currentModule.title + " sections"}>
-          {currentModule.sections.map(section => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionActive : s.sectionTab}>{section.title}</button>)}
-        </nav>
+        <section className={s.sectionChooser} aria-label={currentModule.title + " sections"}>
+          <div className={s.chooserHeading}>
+            <div><span className={s.eyebrow}>STEP 2 · SELECT A SECTION</span><h2>Choose a work area</h2><p>Select a section to reveal the tools and actions available inside it.</p></div>
+            <span className={s.chooserCount}>{currentModule.sections.length} SECTIONS</span>
+          </div>
+          <div className={s.sectionGrid}>
+            {currentModule.sections.map((section, index) => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionCardActive : s.sectionCard}>
+              <span className={s.sectionNumber}>{String(index + 1).padStart(2,"0")}</span>
+              <span className={s.sectionCardCopy}><strong>{section.title}</strong><small>{section.pages.length} tools and work areas</small></span>
+              <b>›</b>
+            </button>)}
+          </div>
+        </section>
 
         <main className={s.main}>
           {currentModule.id === "home" && sectionTitle === "Home" && activePage === "My Dashboard" ? <>
@@ -137,14 +147,14 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
               <section className={s.panel}><div className={s.panelHeading}><div><h3>Recent administrative activity</h3><p>Latest recorded system actions.</p></div><span>LIVE RECORDS</span></div>{admin && data.audit.length ? data.audit.slice(0,8).map((item,i) => <div className={s.activityRow} key={i}><b>{toText(item.action)}</b><span>{toText(item.table_name)} · {toText(item.actor_email)}</span><small>{toText(item.at)}</small></div>) : <div className={s.emptyState}><strong>No activity to display</strong><p>New activity will appear here when actions are recorded in CAMS.</p></div>}</section>
             </div>
           </> : <>
-            <div className={s.pageHeading}><div><span className={s.eyebrow}>{currentModule.title.toUpperCase()} / {currentSection.title.toUpperCase()}</span><h2>{activePage || currentSection.title}</h2><p>{currentSection.pages.length} work areas in this section.</p></div><div className={s.headingActions}>{activePage && <button className={s.outlineButton} onClick={() => setActivePage("")}>← All pages</button>}<span className={s.dateLabel}>{currentSection.title}</span></div></div>
+            <div className={s.pageHeading}><div><span className={s.eyebrow}>{currentModule.title.toUpperCase()} / {currentSection.title.toUpperCase()}</span><h2>{activePage || currentSection.title}</h2><p>STEP 3 · {currentSection.pages.length} tools and work areas available in this section.</p></div><div className={s.headingActions}>{activePage && <button className={s.outlineButton} onClick={() => setActivePage("")}>← All pages</button>}<span className={s.dateLabel}>{currentSection.title}</span></div></div>
             
             {selectedKey ? <section className={s.panel}>
               <div className={s.panelHeading}><div><h3>{activePage}</h3><p>{countFor(selectedKey).toLocaleString("en-ZA")} records in the connected register.</p></div>{form && (admin || writer) && <button className={s.primary} onClick={() => setFormOpen(!formOpen)}>{formOpen ? "Close form" : "+ Add record"}</button>}</div>
               <div className={s.tableToolbar}><input aria-label={"Search " + activePage} placeholder={"Search " + activePage.toLowerCase() + "…"} value={query} onChange={e => setQuery(e.target.value)} /><span>{rows.length} shown</span><button onClick={() => window.print()} className={s.outlineButton}>Print / PDF</button></div>
               {formOpen && form && <div className={s.formGrid}>{form.fields.map(([key,label,options]) => <label key={key}>{label}{options ? <select value={values[key] || options[0]} onChange={e => setValues(v => ({...v,[key]:e.target.value}))}>{options.map(option => <option key={option}>{option}</option>)}</select> : <input value={values[key] || ""} onChange={e => setValues(v => ({...v,[key]:e.target.value}))} />}</label>)}<button className={s.primary} disabled={saving} onClick={save}>{saving ? "Saving…" : "Save record"}</button>{error && <p className={s.error}>{error}</p>}</div>}
               <div className={s.tableWrap}>{rows.length ? <table><thead><tr>{columns.map(col => <th key={col}>{col.replace(/_/g," ")}</th>)}</tr></thead><tbody>{rows.map((row,i) => <tr key={i}>{columns.map(col => <td key={col}>{toText(row[col])}</td>)}</tr>)}</tbody></table> : <div className={s.emptyState}><strong>No matching records</strong><p>There are currently no records to display for this register, or your search returned no matches.</p></div>}</div>
-            </section> : <>{activePage && <div className={s.workspaceNotice}><strong>{activePage}</strong><p>This page is included in the CAMS specification. Its dedicated data records, forms and approval workflow must be connected before it can be used operationally.</p></div>}<section className={s.panel}><div className={s.panelHeading}><div><h3>{currentSection.title}</h3><p>Select a work area to open its page.</p></div><span>{currentSection.pages.length} WORK AREAS</span></div><div className={s.pageGrid}>{currentSection.pages.map(page => <button key={page} className={s.pageCard} onClick={() => selectPage(page)}><span className={s.pageCardIcon}>›</span><span><strong>{page}</strong><small>Open workspace</small></span><b>›</b></button>)}</div></section></>}
+            </section> : <>{activePage && <div className={s.workspaceNotice}><strong>{activePage}</strong><p>This page is included in the CAMS specification. Its dedicated data records, forms and approval workflow must be connected before it can be used operationally.</p></div>}<section className={s.panel}><div className={s.panelHeading}><div><span className={s.eyebrow}>TOOLS IN THIS SECTION</span><h3>{currentSection.title}</h3><p>Choose a tool below to open its workspace.</p></div><span>{currentSection.pages.length} TOOLS</span></div><div className={s.pageGrid}>{currentSection.pages.map(page => <button key={page} className={s.pageCard} onClick={() => selectPage(page)}><span className={s.pageCardIcon}>›</span><span><strong>{page}</strong><small>Open workspace</small></span><b>›</b></button>)}</div></section></>}
           </>}
           <footer className={s.footer}><span>WESTERN CAPE SPORTS ASSOCIATION NPC · CAMS</span><span>Access-controlled internal system · All times SAST</span></footer>
         </main>
