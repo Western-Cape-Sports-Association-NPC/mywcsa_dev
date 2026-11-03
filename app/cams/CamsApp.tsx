@@ -63,7 +63,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
     const next = modules.find(m => m.id === id) || modules[0];
     setModuleId(next.id);
     setSectionTitle(next.sections[0]?.title || "Overview");
-    setActivePage(next.sections[0]?.pages[0] || next.title);
+    setActivePage(next.id === "home" ? "My Dashboard" : "");
     setQuery("");
     setFormOpen(false);
     setError("");
@@ -71,7 +71,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
   function selectSection(title: string) {
     const section = currentModule.sections.find(x => x.title === title);
     setSectionTitle(title);
-    setActivePage(section?.pages[0] || title);
+    setActivePage(moduleId === "home" && title === "Home" ? "My Dashboard" : "");
     setQuery("");
     setFormOpen(false);
     setError("");
@@ -136,14 +136,14 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
               <section className={s.panel}><div className={s.panelHeading}><div><h3>Recent administrative activity</h3><p>Latest recorded system actions.</p></div><span>LIVE RECORDS</span></div>{admin && data.audit.length ? data.audit.slice(0,8).map((item,i) => <div className={s.activityRow} key={i}><b>{toText(item.action)}</b><span>{toText(item.table_name)} · {toText(item.actor_email)}</span><small>{toText(item.at)}</small></div>) : <div className={s.emptyState}><strong>No activity to display</strong><p>New activity will appear here when actions are recorded in CAMS.</p></div>}</section>
             </div>
           </> : <>
-            <div className={s.pageHeading}><div><span className={s.eyebrow}>{currentModule.title.toUpperCase()} / {currentSection.title.toUpperCase()}</span><h2>{activePage}</h2><p>{currentSection.pages.length} work areas in this section.</p></div><span className={s.dateLabel}>{currentSection.title}</span></div>
-            <div className={s.pageTabs} aria-label="Pages in section">{currentSection.pages.map(page => <button key={page} onClick={() => selectPage(page)} className={activePage === page ? s.pageActive : s.pageTab}>{page}</button>)}</div>
+            <div className={s.pageHeading}><div><span className={s.eyebrow}>{currentModule.title.toUpperCase()} / {currentSection.title.toUpperCase()}</span><h2>{activePage}</h2><p>{currentSection.pages.length} work areas in this section.</p></div><div className={s.headingActions}>{activePage && <button className={s.outlineButton} onClick={() => setActivePage("")}>← All pages</button>}<span className={s.dateLabel}>{currentSection.title}</span></div></div>
+            
             {selectedKey ? <section className={s.panel}>
               <div className={s.panelHeading}><div><h3>{activePage}</h3><p>{countFor(selectedKey).toLocaleString("en-ZA")} records in the connected register.</p></div>{form && (admin || writer) && <button className={s.primary} onClick={() => setFormOpen(!formOpen)}>{formOpen ? "Close form" : "+ Add record"}</button>}</div>
               <div className={s.tableToolbar}><input aria-label={"Search " + activePage} placeholder={"Search " + activePage.toLowerCase() + "…"} value={query} onChange={e => setQuery(e.target.value)} /><span>{rows.length} shown</span><button onClick={() => window.print()} className={s.outlineButton}>Print / PDF</button></div>
               {formOpen && form && <div className={s.formGrid}>{form.fields.map(([key,label,options]) => <label key={key}>{label}{options ? <select value={values[key] || options[0]} onChange={e => setValues(v => ({...v,[key]:e.target.value}))}>{options.map(option => <option key={option}>{option}</option>)}</select> : <input value={values[key] || ""} onChange={e => setValues(v => ({...v,[key]:e.target.value}))} />}</label>)}<button className={s.primary} disabled={saving} onClick={save}>{saving ? "Saving…" : "Save record"}</button>{error && <p className={s.error}>{error}</p>}</div>}
               <div className={s.tableWrap}>{rows.length ? <table><thead><tr>{columns.map(col => <th key={col}>{col.replace(/_/g," ")}</th>)}</tr></thead><tbody>{rows.map((row,i) => <tr key={i}>{columns.map(col => <td key={col}>{toText(row[col])}</td>)}</tr>)}</tbody></table> : <div className={s.emptyState}><strong>No matching records</strong><p>There are currently no records to display for this register, or your search returned no matches.</p></div>}</div>
-            </section> : <section className={s.panel}><div className={s.panelHeading}><div><h3>{currentSection.title}</h3><p>Select a work area to open its page.</p></div><span>{currentSection.pages.length} PAGES</span></div><div className={s.pageGrid}>{currentSection.pages.map((page,index) => <button key={page} className={s.pageCard} onClick={() => selectPage(page)}><span className={s.pageCardIcon}>{String(index+1).padStart(2,"0")}</span><span><strong>{page}</strong><small>Open workspace</small></span><b>›</b></button>)}</div></section>}
+            </section> : <>{activePage && <div className={s.workspaceNotice}><strong>{activePage}</strong><p>This page is included in the CAMS specification. Its dedicated data records, forms and approval workflow must be connected before it can be used operationally.</p></div>}<section className={s.panel}><div className={s.panelHeading}><div><h3>{currentSection.title}</h3><p>Select a work area to open its page.</p></div><span>{currentSection.pages.length} WORK AREAS</span></div><div className={s.pageGrid}>{currentSection.pages.map(page => <button key={page} className={s.pageCard} onClick={() => selectPage(page)}><span className={s.pageCardIcon}>›</span><span><strong>{page}</strong><small>Open workspace</small></span><b>›</b></button>)}</div></section></>}
           </>}
           <footer className={s.footer}><span>WESTERN CAPE SPORTS ASSOCIATION NPC · CAMS</span><span>Access-controlled internal system · All times SAST</span></footer>
         </main>
