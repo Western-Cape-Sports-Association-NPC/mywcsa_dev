@@ -15,6 +15,7 @@ const forms: Record<string, { table: string; fields: Field[] }> = {
   "Staff List": { table: "staff_access", fields: [["email", "Staff email"], ["full_name", "Full name"], ["role", "Role", roles], ["directorate", "Directorate"]] },
 };
 const toText = (v: unknown) => v === null || v === undefined ? "—" : typeof v === "boolean" ? (v ? "Yes" : "No") : String(v).replace("T", " ").slice(0, 19);
+const dateStamp = (date: Date) => { const parts = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric", timeZone: "Africa/Johannesburg" }).formatToParts(date); const part = (type: string) => parts.find(item => item.type === type)?.value || ""; return `${part("weekday")} - ${part("day")}/${part("month")}/${part("year")}`; };
 const pageDataKey: Record<string, keyof Pick<CamsData, "orgs" | "schools" | "persons" | "assets" | "staff" | "audit">> = {
   "Organisations": "orgs", "Organisation List": "orgs", "School List": "schools", "Schools": "schools",
   "All Participants List": "persons", "Learner List": "persons", "Staff List": "staff", "Asset Register": "assets",
@@ -107,7 +108,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
           <span className={s.brandCopy}><strong>Centralised Administrative Management System</strong><small>SPORT, ARTS AND CULTURE · WESTERN CAPE</small></span>
         </Link>
         <div className={s.headerRight}>
-          <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false })}</strong><small>{now.toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "short", day: "2-digit", month: "short", year: "numeric" })} · SAST</small></span>
+          <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false })}</strong><small>{dateStamp(now)} · SAST</small></span>
           <span className={s.authStatus}><i className={s.dot} /><strong>{me.full_name}</strong><small>{admin ? "System Owner" : me.role.replaceAll("_", " ")}</small></span>
           <Link href="/my-apps" className={s.headerButton}>GovApps</Link>
         </div>
