@@ -104,8 +104,9 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
     <div className={s.root}>
       <header className={s.header}>
         <Link href="/cams" className={s.brand} aria-label="CAMS home">
-          <span className={s.brandMark}>C</span>
-          <span className={s.brandCopy}><strong>Centralised Administrative Management System</strong><small>SPORT, ARTS AND CULTURE · WESTERN CAPE</small></span>
+          <span className={s.bannerStar} aria-hidden="true">✦</span>
+          <span className={s.bannerTitle}><span className={s.bannerLetters}><b>C</b><b>A</b><b>M</b><b>S</b></span><span>Centralised Administrative Management System</span></span>
+          <span className={s.bannerCrest} aria-label="Western Cape">✥</span>
         </Link>
         <div className={s.headerRight}>
           <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false })}</strong><small>{dateStamp(now)} · SAST</small></span>
@@ -119,25 +120,19 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
       </nav>
 
       <div className={s.workspace}>
+        <aside className={s.sectionPanel} aria-label={currentModule.title + " sections"}>
+          <div className={s.sectionPanelHeading}>{currentModule.short || currentModule.title}</div>
+          {currentModule.sections.map(section => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionPanelActive : s.sectionPanelItem}>
+            <span>{section.title}</span><small>{section.pages.length}</small>
+          </button>)}
+        </aside>
+        <div className={s.contentColumn}>
         <div className={s.moduleIntro}>
           <div><span className={s.eyebrow}>WCSA CAMS / {currentModule.title.toUpperCase()}</span><h1>{currentModule.title}</h1><p>{currentModule.description}</p></div>
           <div className={s.moduleMeta}><span className={s.secureMark}>●</span> STAFF WORKSPACE <b>·</b> {admin ? "SYSTEM OWNER" : me.directorate || "AUTHORISED STAFF"}</div>
         </div>
 
-        <section className={s.sectionChooser} aria-label={currentModule.title + " sections"}>
-          <div className={s.chooserHeading}>
-            <div><span className={s.eyebrow}>STEP 2 · SELECT A SECTION</span><h2>Choose a work area</h2><p>Select a section to reveal the tools and actions available inside it.</p></div>
-            <span className={s.chooserCount}>{currentModule.sections.length} SECTIONS</span>
-          </div>
-          <div className={s.sectionGrid}>
-            {currentModule.sections.map((section, index) => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionCardActive : s.sectionCard}>
-              <span className={s.sectionNumber}>{String(index + 1).padStart(2,"0")}</span>
-              <span className={s.sectionCardCopy}><strong>{section.title}</strong><small>{section.pages.length} tools and work areas</small></span>
-              <b>›</b>
-            </button>)}
-          </div>
-        </section>
-
+ 
         <main className={s.main}>
           {currentModule.id === "home" && sectionTitle === "Home" && activePage === "My Dashboard" ? <>
             <div className={s.pageHeading}><div><span className={s.eyebrow}>OVERVIEW</span><h2>My Dashboard</h2><p>Your WCSA administrative workspace at a glance.</p></div><span className={s.dateLabel}>{now.toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Johannesburg" })}</span></div>
@@ -158,6 +153,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
           </>}
           <footer className={s.footer}><span>WESTERN CAPE SPORTS ASSOCIATION NPC · CAMS</span><span>Access-controlled internal system · All times SAST</span></footer>
         </main>
+        </div>
       </div>
     </div>
   );
