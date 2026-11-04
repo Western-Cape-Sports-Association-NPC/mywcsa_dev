@@ -124,19 +124,9 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
           <div className={s.moduleMeta}><span className={s.secureMark}>●</span> STAFF WORKSPACE <b>·</b> {admin ? "SYSTEM OWNER" : me.directorate || "AUTHORISED STAFF"}</div>
         </div>
 
-        <section className={s.sectionChooser} aria-label={currentModule.title + " sections"}>
-          <div className={s.chooserHeading}>
-            <div><span className={s.eyebrow}>STEP 2 · SELECT A SECTION</span><h2>Choose a work area</h2><p>Select a section to reveal the tools and actions available inside it.</p></div>
-            <span className={s.chooserCount}>{currentModule.sections.length} SECTIONS</span>
-          </div>
-          <div className={s.sectionGrid}>
-            {currentModule.sections.map((section, index) => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionCardActive : s.sectionCard}>
-              <span className={s.sectionNumber}>{String(index + 1).padStart(2,"0")}</span>
-              <span className={s.sectionCardCopy}><strong>{section.title}</strong><small>{section.pages.length} tools and work areas</small></span>
-              <b>›</b>
-            </button>)}
-          </div>
-        </section>
+        <nav className={s.sectionNav} aria-label={currentModule.title + " sections"}>
+          {currentModule.sections.map(section => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionActive : s.sectionTab}>{section.title}</button>)}
+        </nav>
 
         <main className={s.main}>
           {currentModule.id === "home" && sectionTitle === "Home" && activePage === "My Dashboard" ? <>
