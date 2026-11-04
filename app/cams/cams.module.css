@@ -143,3 +143,28 @@
 .pageCard:hover{border-color:#879bc9;background:#f2f5fb;box-shadow:0 1px 3px rgba(25,42,75,.06)}
 .pageCardIcon{width:27px;height:27px;background:#e8edf8;font-size:17px}
 @media(max-width:560px){.sectionChooser{padding:10px}.chooserHeading{align-items:flex-start}.sectionGrid{grid-template-columns:1fr}.sectionCard,.sectionCardActive{min-height:48px}}
+
+/* Exact uploaded CAMS banner and CEMIS-style navigation */
+.header{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0;background:#001484;border-bottom:0}
+.headerArtwork{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;width:100%;min-height:82px;background:#001484}
+.brand{display:flex;align-items:center;justify-content:center;width:100%;max-width:none;overflow:hidden}
+.brand img{display:block;flex:0 0 auto;max-width:none;height:auto;object-fit:contain;transition:width .15s ease}
+.imageScale{position:absolute;right:10px;bottom:7px;display:flex;align-items:center;gap:4px;padding:3px 5px;background:rgba(0,0,0,.38);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.imageScale button{width:23px;height:21px;padding:0;border:1px solid rgba(255,255,255,.55);background:transparent;color:#fff;font-size:15px;line-height:1;cursor:pointer}
+.imageScale span{min-width:34px;text-align:center;font-size:9px;font-weight:700}
+.headerRight{min-height:34px;justify-content:flex-end;padding:4px 14px;background:#001484;border-top:1px solid rgba(255,255,255,.18)}
+.moduleNav{position:relative;top:auto;z-index:18;display:flex;align-items:stretch;gap:0;overflow-x:auto;background:#001484;border-bottom:1px solid #8d9abf;scrollbar-width:thin}
+.moduleTab,.moduleActive{min-height:36px;padding:0 16px;border:0;border-right:1px solid rgba(255,255,255,.2);background:#001484;color:#fff;font-size:10px;font-weight:650;white-space:nowrap}
+.moduleTab:hover{background:#17349a;color:#fff}
+.moduleActive{background:#fff;color:#001484;box-shadow:inset 0 3px 0 #001484}
+.workspace{padding:0 clamp(12px,2vw,24px) 24px}
+.moduleLayout{display:grid;grid-template-columns:minmax(190px,235px) minmax(0,1fr);align-items:start;gap:0;border:1px solid #c9cdd4;background:#fff}
+.sectionPanel{display:flex;flex-direction:column;min-width:0;max-height:calc(100vh - 150px);overflow-y:auto;background:#003b0b;border-right:1px solid #c6cbd2}
+.sectionPanelHeading{padding:9px 11px;background:#002d08;color:#fff;font-size:9px;font-weight:700;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.18)}
+.sectionPanelItem,.sectionPanelActive{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:34px;padding:7px 10px;border:0;border-bottom:1px solid rgba(255,255,255,.08);background:#003b0b;color:#fff;text-align:left;font-size:11px;font-weight:500}
+.sectionPanelItem:hover{background:#07551a}
+.sectionPanelActive{background:#16752b;color:#fff;font-weight:700;box-shadow:inset 3px 0 0 #b9e6c0}
+.sectionPanelItem small,.sectionPanelActive small{flex:0 0 auto;color:rgba(255,255,255,.72);font-size:9px}
+.main{min-width:0;padding:16px}
+@media(max-width:760px){.headerArtwork{min-height:64px}.moduleLayout{grid-template-columns:minmax(145px,32%) minmax(0,1fr)}.sectionPanelItem,.sectionPanelActive{font-size:10px;padding:7px 8px}.main{padding:11px}}
+@media(max-width:520px){.headerRight{gap:9px}.clock small{font-size:8px}.authStatus strong{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.moduleLayout{grid-template-columns:1fr}.sectionPanel{max-height:180px;border-right:0;border-bottom:1px solid #c6cbd2}.sectionPanelHeading{position:sticky;top:0}.sectionPanelItem,.sectionPanelActive{min-height:31px}.main{padding:10px}}
