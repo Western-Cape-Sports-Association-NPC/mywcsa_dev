@@ -106,7 +106,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
       <header className={s.header}>
         <div className={s.headerArtwork}>
           <Link href="/cams" className={s.brand} aria-label="CAMS home">
-            <img src="/cams-header.png" alt="Centralised Administrative Management System — WCSA" style={{ width: `${headerScale}%` }} />
+            <img src="/cams-header.svg" alt="Centralised Administrative Management System — WCSA" style={{ width: `${headerScale}%` }} />
           </Link>
           <div className={s.imageScale} aria-label="Resize CAMS header image">
             <button type="button" onClick={() => setHeaderScale(value => Math.min(125, value + 5))} aria-label="Increase header image size by 5 percent">+</button>
