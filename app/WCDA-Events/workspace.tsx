@@ -84,7 +84,7 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
   const upcoming=events.filter(e=>e.start_date>=new Date().toISOString().slice(0,10));
   const metrics=[
     {label:"Registered events",value:isStaffViewer?"—":loading?"—":String(events.length),icon:"calendar" as WorkHubIconName,subtitle:"Events in authorised records"},
-    {label:"Awaiting review",value:isStaffViewer?"—":loading?"—":String(events.filter(e=>["submitted","under_review","corrections_requested"].includes(e.status)).length),icon:"clipboard" as WorkHubIconName,subtitle:"Pending assessments"},
+    {label:"Vetting pending",value:isStaffViewer?"—":loading?"—":String(events.filter(e=>e.capture_channel==="monitoring_register"&&e.status==="draft").length),icon:"clipboard" as WorkHubIconName,subtitle:"Initial register entries awaiting checks"},
     {label:"Endorsed events",value:isStaffViewer?"—":loading?"—":String(events.filter(e=>e.status==="endorsed").length),icon:"check" as WorkHubIconName,subtitle:"Approved decisions"},
     {label:"Upcoming events",value:isStaffViewer?"—":loading?"—":String(upcoming.length),icon:"video" as WorkHubIconName,subtitle:"In the event calendar"},
   ];
