@@ -116,7 +116,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
     const canReview=mayApprove&&!i.is_pilot_test&&i.status==="pending_approval"&&i.prepared_by_email!==actor.email;
     return <article key={i.id} className={styles.invoice}>
      <div className={styles.invoiceTop}><div><small>{byEvent(i.event_id)?.reference||"WCDA EVENT"}</small><h4>{byEvent(i.event_id)?.name||"Event invoice"}</h4><p>{i.description}</p></div><strong className={styles.amount}>{rand(i.amount_cents)}</strong></div>
-     <div className={styles.details}>{i.is_pilot_test&&<span className={styles.pilotLabel}>LEGACY TEST · DISABLED</span>}<span>Invoice {i.reference}</span><span>Issued {shortDate(i.created_at)}</span><span className={styles.status} data-status={i.status}>{label(i.status)}</span></div>
+     <div className={styles.details}>{i.is_pilot_test&&<span className={styles.legacyTestLabel}>LEGACY TEST · DISABLED</span>}<span>Invoice {i.reference}</span><span>Issued {shortDate(i.created_at)}</span><span className={styles.status} data-status={i.status}>{label(i.status)}</span></div>
      {i.status==="pending_approval"&&!i.is_pilot_test&&<p className={styles.hint}>Official event charge: finance review pending before checkout.</p>}
      {i.status==="approved_for_payment"&&!i.is_pilot_test&&i.approved_by_email&&<p className={styles.hint}>Approved by {isStaff?i.approved_by_email:"WCDA Finance"} on {shortDate(i.approved_at)}.</p>}
      {i.status==="paid"&&receipt&&<div className={styles.receipt}><strong>✓ Paystack payment verified</strong><span>Confirmation: {receipt.receipt_reference}</span><button type="button" onClick={()=>void receiptPdf(i,receipt)}>Download confirmation PDF ↓</button></div>}
