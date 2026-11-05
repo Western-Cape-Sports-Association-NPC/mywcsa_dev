@@ -72,19 +72,12 @@ async function gatewayRequest(path:string, key:string, method:"GET"|"POST",data?
  * transactions that were already initiated.
  */
 export function checkoutConfig(invoice?:EmsInvoice){
- // Only the R1 internal pilot can bypass general release gates; settlement is independent.
- const isPilot=invoice?.is_pilot_test===true
-   && invoice.amount_cents===100
-   && invoice.customer_email.toLowerCase()==="ebranch@wcsports.co.za";
- if(isPilot){
-  if(process.env.WCDA_EVENTS_R1_PILOT_ENABLED!=="true")
-   throw new EmsError(503,"The R1 internal pilot has not been enabled for this deployment.");
- } else if(process.env.WCDA_EVENTS_CHECKOUT_ENABLED!=="true"){
+ if(invoice?.is_pilot_test===true)
+  throw new EmsError(403,"Legacy internal test invoices are disabled.");
+ if(process.env.WCDA_EVENTS_CHECKOUT_ENABLED!=="true")
   throw new EmsError(503,"MyWCDA Events checkout is not yet released for general event fees.");
- }
  const cfg=gatewayConfig();
- if(cfg.mode==="live" && !isPilot &&
-    process.env.WCDA_EVENTS_LIVE_PAYMENTS_ENABLED!=="true")
+ if(cfg.mode==="live"&&process.env.WCDA_EVENTS_LIVE_PAYMENTS_ENABLED!=="true")
   throw new EmsError(503,"General live event payments are awaiting finance release authorisation.");
  if(cfg.origin!=="https://govapps.wcsports.co.za")
   throw new EmsError(503,"WCDA Events checkout requires the official GovApps payment origin.");
