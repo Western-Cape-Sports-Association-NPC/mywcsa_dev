@@ -46,3 +46,5 @@
 @media(max-width:640px){.formGrid{grid-template-columns:1fr}.wide{grid-column:auto}.invoiceTop{flex-direction:column}.amount{font-size:17px}.card{padding:15px}}
 
 
+
+.legacyTestLabel{display:inline-flex;background:#f1f3f7;color:#536174;border:1px solid #d8dee8;padding:5px 9px;border-radius:50px;font-size:10px;font-weight:750;letter-spacing:.06em}
