@@ -36,6 +36,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [now] = useState(() => new Date());
+  const [headerScale, setHeaderScale] = useState(100);
 
   const currentModule = modules.find(m => m.id === moduleId) || modules[0];
   const currentSection = currentModule.sections.find(x => x.title === sectionTitle) || currentModule.sections[0];
@@ -103,10 +104,16 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
   return (
     <div className={s.root}>
       <header className={s.header}>
-        <Link href="/cams" className={s.brand} aria-label="CAMS home">
-          <span className={s.brandMark}>C</span>
-          <span className={s.brandCopy}><strong>Centralised Administrative Management System</strong><small>SPORT, ARTS AND CULTURE · WESTERN CAPE</small></span>
-        </Link>
+        <div className={s.headerArtwork}>
+          <Link href="/cams" className={s.brand} aria-label="CAMS home">
+            <img src="/cams-header.svg" alt="Centralised Administrative Management System — WCSA" style={{ width: `${headerScale}%` }} />
+          </Link>
+          <div className={s.imageScale} aria-label="Resize CAMS header image">
+            <button type="button" onClick={() => setHeaderScale(value => Math.min(125, value + 5))} aria-label="Increase header image size by 5 percent">+</button>
+            <span>{headerScale}%</span>
+            <button type="button" onClick={() => setHeaderScale(value => Math.max(70, value - 5))} aria-label="Decrease header image size by 5 percent">−</button>
+          </div>
+        </div>
         <div className={s.headerRight}>
           <span className={s.clock}><strong>{now.toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false })}</strong><small>{dateStamp(now)} · SAST</small></span>
           <span className={s.authStatus}><i className={s.dot} /><strong>{me.full_name}</strong><small>{admin ? "System Owner" : me.role.replaceAll("_", " ")}</small></span>
@@ -124,9 +131,13 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
           <div className={s.moduleMeta}><span className={s.secureMark}>●</span> STAFF WORKSPACE <b>·</b> {admin ? "SYSTEM OWNER" : me.directorate || "AUTHORISED STAFF"}</div>
         </div>
 
-        <nav className={s.sectionNav} aria-label={currentModule.title + " sections"}>
-          {currentModule.sections.map(section => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionActive : s.sectionTab}>{section.title}</button>)}
-        </nav>
+        <div className={s.moduleLayout}>
+        <aside className={s.sectionPanel} aria-label={currentModule.title + " sections"}>
+          <div className={s.sectionPanelHeading}>SECTIONS</div>
+          {currentModule.sections.map(section => <button key={section.title} type="button" onClick={() => selectSection(section.title)} className={section.title === currentSection.title ? s.sectionPanelActive : s.sectionPanelItem}>
+            <span>{section.title}</span><small>{section.pages.length}</small>
+          </button>)}
+        </aside>
 
         <main className={s.main}>
           {currentModule.id === "home" && sectionTitle === "Home" && activePage === "My Dashboard" ? <>
@@ -148,6 +159,7 @@ export default function CamsApp({ me, data }: { me: CamsStaff; data: CamsData })
           </>}
           <footer className={s.footer}><span>WESTERN CAPE SPORTS ASSOCIATION NPC · CAMS</span><span>Access-controlled internal system · All times SAST</span></footer>
         </main>
+        </div>
       </div>
     </div>
   );
