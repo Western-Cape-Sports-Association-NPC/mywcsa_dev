@@ -12,7 +12,6 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  const isStaff=actor.mode==="staff";
  const mayPrepare=isStaff&&["finance","manager","super_admin","executive"].includes(actor.role||"");
  const mayApprove=isStaff&&["manager","super_admin","executive"].includes(actor.role||"");
- const isPilotTester=actor.mode==="staff"&&actor.role==="super_admin"&&actor.email.toLowerCase()==="ebranch@wcsports.co.za";
  const[records,setRecords]=useState<EmsInvoice[]>([]);
  const[receipts,setReceipts]=useState<EmsReceipt[]>([]);
  const[busy,setBusy]=useState(false);
@@ -20,28 +19,12 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  const[error,setError]=useState("");
  const[message,setMessage]=useState("");
  const[eventId,setEventId]=useState("");
- const[pilotEventId,setPilotEventId]=useState("");
- const[diagnostics,setDiagnostics]=useState<{mode:"test"|"live"|null;configured:boolean;providerReachable:boolean;pilotEnabled:boolean;r1Ready:boolean;message:string}|null>(null);
- const[checking,setChecking]=useState(false);
  const[amount,setAmount]=useState("");
  const[description,setDescription]=useState("");
  const[reason,setReason]=useState("");
  const[activeInvoice,setActiveInvoice]=useState("");
  const unbilled=useMemo(()=>events.filter(e=>!records.some(i=>i.event_id===e.id&&!i.is_pilot_test)),[events,records]);
- async function checkPaystack(){
-   setChecking(true);setError("");
-   try{
-    const r=await fetch("/api/wcda-events/payments/health",{cache:"no-store"});
-    const d=await r.json() as {error?:string;mode:"test"|"live"|null;configured:boolean;providerReachable:boolean;pilotEnabled:boolean;r1Ready:boolean;message:string};
-    if(!r.ok)throw Error(d.error||"Gateway check unavailable.");
-    setDiagnostics(d);
-   }catch(e){setError(e instanceof Error?e.message:"Gateway check unavailable.");}
-   finally{setChecking(false);}
- }
  const byEvent=(id:string)=>events.find(e=>e.id===id);
- const pilotEligible=events.filter(e=>!records.some(i=>i.event_id===e.id&&i.is_pilot_test)&&e.captured_by_email?.toLowerCase()===actor.email.toLowerCase()
-   &&e.capture_channel!=="organiser_portal");
-
  async function refresh(){
   setLoading(true);setError("");
   try{
@@ -66,14 +49,11 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
     return;
    }
    if(payload.action==="prepare"){setAmount("");setDescription("");setEventId("");}
-   if(payload.action==="prepare_r1_pilot")setPilotEventId("");
    setReason("");setActiveInvoice("");
    await refresh();
-   setMessage(payload.action==="prepare_r1_pilot"||(payload.action==="prepare"&&x.invoice?.is_pilot_test)
-     ?"R1 internal pilot invoice created and ready for checkout. No additional manager approval is required."
-     :payload.action==="prepare"
-       ?"Official event invoice prepared. The normal finance controls apply."
-       :payload.action==="approve"?"Invoice approved for payment. The linked payer may proceed.":"Invoice cancelled before checkout.");
+   setMessage(payload.action==="prepare"
+     ?"Official event invoice prepared. The normal finance controls apply."
+     :payload.action==="approve"?"Invoice approved for payment. The linked payer may proceed.":"Invoice cancelled before checkout.");
   }catch(e){setError(e instanceof Error?e.message:"Unable to complete the action.");}
   finally{setBusy(false);}
  }
@@ -115,40 +95,9 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
   }catch{setError("Could not create the payment confirmation document.");}
  }
  return <section className={styles.root}>
-  <div className={styles.heading}><div><span className={styles.overline}>MYWCDA EVENTS · SECURE FINANCIAL SERVICES</span><h2>{isStaff?"Event billing & payment control":"Your invoices & payments"}</h2><p>{isStaff?"Run the R1 connectivity pilot without manual approval, and manage approved official event charges and verified Paystack settlements.":"Review approved event charges and pay safely through Paystack. Charges cannot be changed in your browser."}</p></div><button type="button" onClick={()=>void refresh()} disabled={loading||busy}>↻ Refresh</button></div>
+  <div className={styles.heading}><div><span className={styles.overline}>MYWCDA EVENTS · SECURE FINANCIAL SERVICES</span><h2>{isStaff?"Event billing & payment control":"Your invoices & payments"}</h2><p>{isStaff?"Manage approved official event charges, independent finance approvals and verified Paystack settlements.":"Review approved event charges and pay safely through Paystack. Charges cannot be changed in your browser."}</p></div><button type="button" onClick={()=>void refresh()} disabled={loading||busy}>↻ Refresh</button></div>
   {error&&<p className={styles.alert} role="alert">{error}</p>}
   {message&&<p className={styles.success} role="status">{message}</p>}
-  {isPilotTester&&<section className={styles.pilot} aria-label="R1 authorised internal payment pilot">
-    <div className={styles.pilotHeading}>
-      <span>INTERNAL CHECKOUT TEST · NOT AN OFFICIAL WCDA FEE</span>
-      <strong>R1.00</strong>
-    </div>
-    <h3>Test Paystack checkout with your office-captured application</h3>
-    <p>Capture an office application under this account, then create exactly one R1 test invoice for it.
-      The <strong>R1 internal test becomes payment-ready automatically</strong> after its identity, amount and event eligibility are checked.
-      Use your own permitted payment method. This test does not approve an event, issue a permit or set a public fee.</p>
-    <div className={styles.checks}>
-      <button type="button" onClick={()=>void checkPaystack()} disabled={checking}>
-        {checking?"Checking securely…":"Check live Paystack connection ↗"}
-      </button>
-      {diagnostics&&<div role="status"><strong>{diagnostics.r1Ready?"Gateway connection verified":"Gateway needs attention"}</strong>
-       <span>Mode: {diagnostics.mode?.toUpperCase()||"Not configured"} · Provider: {diagnostics.providerReachable?"Connected":"Unconfirmed"} · R1 pilot: {diagnostics.pilotEnabled?"Enabled":"Not enabled"}</span>
-       <small>{diagnostics.message}</small></div>}
-    </div>
-    <div className={styles.pilotActions}>
-      <label>Choose your captured event
-        <select aria-label="Choose your office test event" value={pilotEventId} onChange={e=>setPilotEventId(e.target.value)}>
-          <option value="">Select an unbilled office application</option>
-          {pilotEligible.map(e=><option value={e.id} key={e.id}>{e.reference} · {e.name}</option>)}
-        </select>
-      </label>
-      <button type="button" disabled={busy||!pilotEventId}
-        onClick={()=>void execute({action:"prepare_r1_pilot",eventId:pilotEventId})}>
-        {busy?"Creating…":"Create R1 pilot invoice"}
-      </button>
-    </div>
-    {!pilotEligible.length&&<small>First use **Capture in Office** to register your test application. Return here after it is saved.</small>}
-  </section>}
   {mayPrepare&&<form className={styles.card+" "+styles.prepare} onSubmit={prepare}>
    <div className={styles.cardTitle}><h3>Prepare an event invoice</h3><span>Finance authorisation</span></div>
    <p className={styles.muted}>Only approved, documented fees should be entered. No automatic charge is applied to event applications.</p>
@@ -167,17 +116,17 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
     const canReview=mayApprove&&!i.is_pilot_test&&i.status==="pending_approval"&&i.prepared_by_email!==actor.email;
     return <article key={i.id} className={styles.invoice}>
      <div className={styles.invoiceTop}><div><small>{byEvent(i.event_id)?.reference||"WCDA EVENT"}</small><h4>{byEvent(i.event_id)?.name||"Event invoice"}</h4><p>{i.description}</p></div><strong className={styles.amount}>{rand(i.amount_cents)}</strong></div>
-     <div className={styles.details}>{i.is_pilot_test&&<span className={styles.pilotLabel}>R1 INTERNAL TEST</span>}<span>Invoice {i.reference}</span><span>Issued {shortDate(i.created_at)}</span><span className={styles.status} data-status={i.status}>{label(i.status)}</span></div>
-     {i.status==="pending_approval"&&<p className={styles.hint}>{i.is_pilot_test?"The R1 internal test is being prepared; refresh to check eligibility.":"Official event charge: finance review pending before checkout."}</p>}
-     {i.status==="approved_for_payment"&&(i.is_pilot_test?<p className={styles.hint}><strong>R1 internal test ready for checkout.</strong> Automatic eligibility verified; no manager approval needed.</p>:i.approved_by_email?<p className={styles.hint}>Approved by {isStaff?i.approved_by_email:"WCDA Finance"} on {shortDate(i.approved_at)}.</p>:null)}
+     <div className={styles.details}>{i.is_pilot_test&&<span className={styles.pilotLabel}>LEGACY TEST · DISABLED</span>}<span>Invoice {i.reference}</span><span>Issued {shortDate(i.created_at)}</span><span className={styles.status} data-status={i.status}>{label(i.status)}</span></div>
+     {i.status==="pending_approval"&&!i.is_pilot_test&&<p className={styles.hint}>Official event charge: finance review pending before checkout.</p>}
+     {i.status==="approved_for_payment"&&!i.is_pilot_test&&i.approved_by_email&&<p className={styles.hint}>Approved by {isStaff?i.approved_by_email:"WCDA Finance"} on {shortDate(i.approved_at)}.</p>}
      {i.status==="paid"&&receipt&&<div className={styles.receipt}><strong>✓ Paystack payment verified</strong><span>Confirmation: {receipt.receipt_reference}</span><button type="button" onClick={()=>void receiptPdf(i,receipt)}>Download confirmation PDF ↓</button></div>}
-     {((!isStaff&&!i.is_pilot_test)||(isPilotTester&&i.is_pilot_test&&i.amount_cents===100&&i.customer_email.toLowerCase()===actor.email.toLowerCase()))&&
+     {!isStaff&&!i.is_pilot_test&&
       (i.status==="approved_for_payment"||i.status==="checkout_pending")&&
        <button className={styles.pay} type="button" disabled={busy}
         onClick={()=>void execute({action:"checkout",invoiceId:i.id})}>
         {busy?"Opening secure checkout…":i.status==="checkout_pending"?"Resume Paystack checkout ↗":"Pay "+rand(i.amount_cents)+" securely ↗"}
        </button>}
-     {(i.is_pilot_test&&isPilotTester||!isStaff)&&i.status==="checkout_pending"&&
+     {!isStaff&&i.status==="checkout_pending"&&
       <p className={styles.hint}>If the previous checkout was interrupted, use Resume checkout. The server prevents duplicate requests while an initialization is in progress (up to two minutes).</p>}
      {canReview&&<div className={styles.review}>
       {activeInvoice===i.id?<><label>Approval or cancellation reason<textarea required rows={2} minLength={8} maxLength={500} value={reason} onChange={e=>setReason(e.target.value)} placeholder="Record the documented basis for your decision"/></label><div className={styles.buttons}><button type="button" disabled={busy||reason.trim().length<8} onClick={()=>void execute({action:"approve",invoiceId:i.id,reason})}>Approve for payment</button><button type="button" className={styles.danger} disabled={busy||reason.trim().length<8} onClick={()=>void execute({action:"cancel",invoiceId:i.id,reason})}>Cancel invoice</button><button type="button" className={styles.ghost} onClick={()=>{setActiveInvoice("");setReason("")}}>Close</button></div></>:
