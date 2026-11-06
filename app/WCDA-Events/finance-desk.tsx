@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState,type FormEvent} from "react";
 import type {EmsActor,EmsEvent} from "@/lib/ems/types";
 import type {EmsInvoice,EmsReceipt} from "@/lib/ems/payments";
 import styles from "./finance-desk.module.css";
+import {exportWcdaInvoice} from "@/lib/ems/document-engine";
 
 const rand=(cents:number)=>new Intl.NumberFormat("en-ZA",{style:"currency",currency:"ZAR"}).format(cents/100);
 const label=(s:string)=>s.replaceAll("_"," ").replace(/\b[a-z]/g,c=>c.toUpperCase());
@@ -23,6 +24,8 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  const[description,setDescription]=useState("");
  const[reason,setReason]=useState("");
  const[activeInvoice,setActiveInvoice]=useState("");
+ const[selectedInvoices,setSelectedInvoices]=useState<string[]>([]);
+ const[bulkReason,setBulkReason]=useState("");
  const unbilled=useMemo(()=>events.filter(e=>!records.some(i=>i.event_id===e.id&&!i.is_pilot_test)),[events,records]);
  const byEvent=(id:string)=>events.find(e=>e.id===id);
  async function refresh(){
@@ -55,6 +58,19 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
      ?"Official event invoice prepared. The normal finance controls apply."
      :payload.action==="approve"?"Invoice approved for payment. The linked payer may proceed.":"Invoice cancelled before checkout.");
   }catch(e){setError(e instanceof Error?e.message:"Unable to complete the action.");}
+  finally{setBusy(false);}
+ }
+ async function bulkApprove(){
+  if(!selectedInvoices.length||bulkReason.trim().length<8)return;
+  setBusy(true);setError("");setMessage("");
+  try{
+   const r=await fetch("/api/wcda-events/payments",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"bulk_approve",invoiceIds:selectedInvoices,reason:bulkReason.trim()})});
+   const x=await r.json() as {approved?:number;failed?:number;results?:{reference:string;error?:string}[];error?:string};
+   if(!r.ok)throw new Error(x.error||"Bulk approval could not be completed.");
+   const failures=(x.results||[]).filter(item=>item.error).map(item=>item.reference?item.reference+": "+item.error:item.error);
+   setMessage((x.approved||0)+" invoice(s) approved. "+(x.failed||0)+" not approved."+(failures.length?" Reasons: "+failures.join(" | "):""));
+   setSelectedInvoices([]);setBulkReason("");await refresh();
+  }catch(e){setError(e instanceof Error?e.message:"Bulk approval failed.");}
   finally{setBusy(false);}
  }
  function prepare(e:FormEvent){
@@ -110,13 +126,20 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
   </form>}
   <div className={styles.card}>
    <div className={styles.cardTitle}><h3>{isStaff?"Official event invoices":"Invoices linked to your events"}</h3><span>{records.length} record(s)</span></div>
+   {mayApprove&&<div className={styles.bulkBar}>
+    <div className={styles.bulkTop}><strong>Approval queue · bulk actions</strong><button type="button" className={styles.ghost} onClick={()=>setSelectedInvoices(records.filter(i=>i.status==="pending_approval"&&!i.is_pilot_test&&i.prepared_by_email!==actor.email).map(i=>i.id))}>Select all eligible</button><button type="button" className={styles.ghost} onClick={()=>setSelectedInvoices([])}>Clear selection</button></div>
+    <label>Shared approval rationale (recorded against each selected invoice)<textarea rows={2} minLength={8} maxLength={500} value={bulkReason} onChange={e=>setBulkReason(e.target.value)} placeholder="Explain the independent review basis, tariff reference and supporting checks."/></label>
+    <div className={styles.bulkBottom}><span>{selectedInvoices.length} invoice(s) selected · own-prepared invoices excluded</span><button type="button" disabled={busy||!selectedInvoices.length||bulkReason.trim().length<8} onClick={()=>void bulkApprove()}>{busy?"Processing approvals…":"Approve selected invoices"}</button></div>
+   </div>}
    {loading?<p className={styles.muted}>Loading secured event finance records…</p>:records.length===0?<div className={styles.empty}><strong>No event invoices yet.</strong><p>{isStaff?"Prepare an invoice only when a legitimate fee has been authorised.":"Once WCDA Finance issues and independently approves a charge, the invoice will appear here."}</p></div>:
    <div className={styles.list}>{records.map(i=>{
     const receipt=receipts.find(x=>x.invoice_id===i.id);
     const canReview=mayApprove&&!i.is_pilot_test&&i.status==="pending_approval"&&i.prepared_by_email!==actor.email;
     return <article key={i.id} className={styles.invoice}>
+     {canReview&&<label className={styles.selectInvoice}><input type="checkbox" checked={selectedInvoices.includes(i.id)} onChange={e=>setSelectedInvoices(old=>e.target.checked?[...old,i.id]:old.filter(id=>id!==i.id))}/> Select for bulk approval</label>}
      <div className={styles.invoiceTop}><div><small>{byEvent(i.event_id)?.reference||"WCDA EVENT"}</small><h4>{byEvent(i.event_id)?.name||"Event invoice"}</h4><p>{i.description}</p></div><strong className={styles.amount}>{rand(i.amount_cents)}</strong></div>
      <div className={styles.details}>{i.is_pilot_test&&<span className={styles.legacyTestLabel}>LEGACY TEST · DISABLED</span>}<span>Invoice {i.reference}</span><span>Issued {shortDate(i.created_at)}</span><span className={styles.status} data-status={i.status}>{label(i.status)}</span></div>
+     <div className={styles.invoiceTools}><button type="button" onClick={()=>exportWcdaInvoice(i,byEvent(i.event_id),receipt)}>Download invoice template PDF ↓</button></div>
      {i.status==="pending_approval"&&!i.is_pilot_test&&<p className={styles.hint}>Official event charge: finance review pending before checkout.</p>}
      {i.status==="approved_for_payment"&&!i.is_pilot_test&&i.approved_by_email&&<p className={styles.hint}>Approved by {isStaff?i.approved_by_email:"WCDA Finance"} on {shortDate(i.approved_at)}.</p>}
      {i.status==="paid"&&receipt&&<div className={styles.receipt}><strong>✓ Paystack payment verified</strong><span>Confirmation: {receipt.receipt_reference}</span><button type="button" onClick={()=>void receiptPdf(i,receipt)}>Download confirmation PDF ↓</button></div>}
