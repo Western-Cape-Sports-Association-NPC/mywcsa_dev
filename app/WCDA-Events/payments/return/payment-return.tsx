@@ -8,7 +8,7 @@ export default function PaymentReturn({reference}:{reference:string}){
  const[message,setMessage]=useState("");
  const[receipt,setReceipt]=useState("");
  useEffect(()=>{
-  if(!/^wcda-[a-f0-9]{32}$/.test(reference)){setState("error");setMessage("A valid payment reference was not returned.");return;}
+  if(!/^(?:ESC[0-9]{6}|wcda-[a-f0-9]{32})$/.test(reference)){setState("error");setMessage("A valid payment reference was not returned.");return;}
   let cancelled=false;
   fetch("/api/wcda-events/payments",{
    method:"POST",headers:{"Content-Type":"application/json"},
