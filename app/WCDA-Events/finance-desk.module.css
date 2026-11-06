@@ -48,3 +48,18 @@
 
 
 .legacyTestLabel{display:inline-flex;background:#f1f3f7;color:#536174;border:1px solid #d8dee8;padding:5px 9px;border-radius:50px;font-size:10px;font-weight:750;letter-spacing:.06em}
+
+.bulkBar{display:grid;gap:10px;padding:14px;margin:12px 0 16px;border:1px solid #cbd8eb;border-radius:9px;background:#f5f8fd}
+.bulkTop,.bulkBottom{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.bulkTop strong{margin-right:auto;color:#17345c;font-size:12px}
+.bulkBar label{display:grid;gap:6px;font-size:10px;font-weight:650;color:#405979}
+.bulkBar textarea{width:100%;border:1px solid #cbd7e6;border-radius:6px;padding:9px;background:#fff;color:#233858;font:11px Poppins,sans-serif;resize:vertical}
+.bulkBottom{justify-content:space-between}
+.bulkBottom span{font-size:10px;color:#60748e}
+.bulkBottom button{border:0;border-radius:6px;padding:9px 13px;background:#001484;color:#fff;font:600 11px Poppins,sans-serif}
+.bulkBar .ghost{border:1px solid #cbd8eb;background:#fff;color:#001484;border-radius:6px;padding:7px 10px;font:600 10px Poppins,sans-serif}
+.selectInvoice{display:flex;align-items:center;gap:7px;margin-bottom:9px;color:#415b7c;font-size:10px}
+.selectInvoice input{width:15px;height:15px;accent-color:#001484}
+.invoiceTools{display:flex;justify-content:flex-end;margin-top:8px}
+.invoiceTools button{border:1px solid #cbd8eb;background:#fff;color:#001484;border-radius:6px;padding:7px 10px;font:600 10px Poppins,sans-serif;cursor:pointer}
+@media(max-width:640px){.bulkBottom{align-items:stretch;flex-direction:column}.bulkBottom button{width:100%}.bulkTop strong{width:100%}}
