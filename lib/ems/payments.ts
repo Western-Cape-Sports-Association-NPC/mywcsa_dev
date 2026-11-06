@@ -15,7 +15,7 @@ export type EmsReceipt = {
   payment_mode: "test"|"live"; paid_at: string;
 };
 export const eventPaymentReference = (v:unknown):v is string =>
- typeof v==="string" && /^wcda-[a-f0-9]{32}$/.test(v);
+ typeof v==="string" && (/^ESC[0-9]{6}$/.test(v) || /^wcda-[a-f0-9]{32}$/.test(v));
 export function gatewayConfig(){
   const mode=process.env.PAYSTACK_MODE;
   const key=process.env.PAYSTACK_SECRET_KEY;
