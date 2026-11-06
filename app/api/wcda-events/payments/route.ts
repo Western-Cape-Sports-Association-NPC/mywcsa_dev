@@ -53,6 +53,31 @@ export async function POST(request:Request){
    const result=await paymentAction("prepare",actor,null,body.eventId,{amountCents,description});
    return Response.json({invoice:result}, {status:201,headers});
   }
+  if(action==="bulk_approve"){
+   if(actor.mode!=="staff"||!["manager","super_admin","executive"].includes(actor.role||""))
+    throw new EmsError(403,"An authorised independent manager is required for bulk approval.");
+   if(!Array.isArray(body.invoiceIds)||body.invoiceIds.length<1||body.invoiceIds.length>50)
+    throw new EmsError(400,"Select between 1 and 50 invoices for bulk approval.");
+   const reason=typeof body.reason==="string"?body.reason.trim():"";
+   if(reason.length<8||reason.length>500)throw new EmsError(400,"Record a bulk approval reason of at least 8 characters.");
+   const unique=[...new Set(body.invoiceIds)];
+   if(unique.length!==body.invoiceIds.length||unique.some(id=>!uuid(id)))
+    throw new EmsError(400,"The selected invoice list contains duplicate or invalid references.");
+   const results:Array<{invoiceId:string;reference:string;status:string;error?:string}>=[];
+   for(const invoiceId of unique){
+    try{
+     const invoice=await currentInvoice(invoiceId,ids);
+     if(invoice.status!=="pending_approval")throw new EmsError(409,"Invoice is no longer awaiting approval.");
+     if(invoice.prepared_by_email===actor.email)throw new EmsError(403,"The preparer cannot approve their own invoice.");
+     const result=await paymentAction("approve",actor,invoice.id,invoice.event_id,{reason});
+     results.push({invoiceId,reference:invoice.reference,status:String(result.status||"approved_for_payment")});
+    }catch(error){
+     results.push({invoiceId,reference:"",status:"not_approved",error:error instanceof EmsError?error.message:"Approval failed."});
+    }
+   }
+   const approved=results.filter(x=>x.status==="approved_for_payment").length;
+   return Response.json({approved,failed:results.length-approved,results},{headers});
+  }
   if(action==="approve"||action==="cancel"){
    if(actor.mode!=="staff"||!["manager","super_admin","executive"].includes(actor.role||""))
      throw new EmsError(403,"An authorised independent manager is required.");
