@@ -1,0 +1,1 @@
+export default function FinanceRegister(){return <section><h2>Finance Register</h2></section>;}
