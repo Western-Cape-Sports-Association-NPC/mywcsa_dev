@@ -20,10 +20,10 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  pdf.setFillColor(0,20,132);pdf.rect(0,0,210,40,"F");
  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(18);pdf.text("WESTERN CAPE SPORTS ASSOCIATION NPC",left,16);
  pdf.setFontSize(10);pdf.text("WCDA EVENTS · FINANCE & COMMERCIAL SERVICES",left,23);
- pdf.setFontSize(20);pdf.text("TAX INVOICE",right,34,{align:"right"});
+ pdf.setFontSize(20);pdf.text(invoice.status==="approved_for_payment"||invoice.status==="paid"?"TAX INVOICE":"DRAFT TAX INVOICE",right,34,{align:"right"});
  pdf.setTextColor(35,52,79);pdf.setFont("helvetica","bold");pdf.setFontSize(11);pdf.text("BILL TO",left,52);
  pdf.setFont("helvetica","normal");pdf.setFontSize(10);
- let y=59;for(const line of [organiser,...(event?.applicant_contact_name?[safe(event.applicant_contact_name)]:[]),...address.split("\n")]){pdf.text(line,left,y);y+=5;}
+ let y=59;for(const line of [organiser,...address.split("\n")]){pdf.text(line,left,y);y+=5;}
  pdf.setFont("helvetica","bold");pdf.text("Date",135,52);pdf.text("Invoice Number",135,62);pdf.text("Due Date",135,72);
  pdf.setFont("helvetica","normal");pdf.text(date(invoice.created_at),right,52,{align:"right"});pdf.text(invoice.reference,right,62,{align:"right"});pdf.text(date(dueDate.toISOString()),right,72,{align:"right"});
  y=92;
@@ -46,7 +46,7 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  y+=17;pdf.setFont("helvetica","bold");pdf.setFontSize(10);pdf.text("Account Details",left,y);y+=7;
  pdf.setFont("helvetica","normal");pdf.setFontSize(9);
  for(const line of ["GoTyme Bank","Account Name: Western Cape Sports Association NPC","Account #: 53003631141","Branch Code: 678910","Due Date: "+date(dueDate.toISOString()),""]) {pdf.text(line,left,y);y+=5;}
- pdf.setFontSize(7.5);pdf.setTextColor(93,107,129);
+ if(invoice.status==="pending_approval"||invoice.status==="cancelled"){pdf.setTextColor(170,50,50);pdf.setFont("helvetica","bold");pdf.setFontSize(16);pdf.text(invoice.status==="cancelled"?"CANCELLED":"DRAFT - NOT APPROVED",105,260,{align:"center"});}\n pdf.setFontSize(7.5);pdf.setTextColor(93,107,129);
  const note="VAT shown as R0.00. Supplier VAT registration details have not been supplied to this document engine. Confirm WCSA VAT registration and VAT number before treating this as a statutory tax invoice or charging VAT.";
  for(const line of pdf.splitTextToSize(note,width) as string[]){pdf.text(line,left,y);y+=4;}
  y+=5;pdf.setDrawColor(0,20,132);pdf.line(left,y,right,y);y+=6;
