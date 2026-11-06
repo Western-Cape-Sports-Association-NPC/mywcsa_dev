@@ -25,7 +25,9 @@ export default function FinanceRegister({actor,events}:{actor:EmsActor;events:Em
   if(d){setMessage((d.updated||0)+" quotation(s) "+status+"; "+(d.failed||0)+" not updated.");setSelectedQuotes([]);}
  }
  const chosen=Object.entries(selected).filter(([,q])=>q>0).map(([catalogId,quantity])=>({catalogId,quantity}));
- const discountItem=rows.find(x=>x.id===discountId&&["approved","active"].includes(x.status)&&["grant","international_level","discount"].includes(x.category));\n const discountPct=Number(discountItem?.discount_percent||0);\n const subtotal=chosen.reduce((n,x)=>n+Number(rows.find(y=>y.id===x.catalogId)?.amount_cents||0)*x.quantity,0),disc=Math.min(Math.round(subtotal*discountPct/100),discountItem?.cap_cents==null?Number.MAX_SAFE_INTEGER:discountItem.cap_cents),ext=Math.round(Math.max(0,Number(external)||0)*100);
+ const discountItem=rows.find(x=>x.id===discountId&&["approved","active"].includes(x.status)&&["grant","international_level","discount"].includes(x.category));
+ const discountPct=Number(discountItem?.discount_percent||0);
+ const subtotal=chosen.reduce((n,x)=>n+Number(rows.find(y=>y.id===x.catalogId)?.amount_cents||0)*x.quantity,0),disc=Math.min(Math.round(subtotal*discountPct/100),discountItem?.cap_cents==null?Number.MAX_SAFE_INTEGER:discountItem.cap_cents),ext=Math.round(Math.max(0,Number(external)||0)*100);
  async function quote(){if(!eventId||!chosen.length){setError("Choose an event and at least one approved fee.");return;}const d=await act({action:"quote_create",eventId,items:chosen,discountCatalogId:discountId||null,externalCostsCents:ext});if(d)setMessage("Quotation "+d.quote.quote_number+" submitted for independent approval.");}
  return <section className={styles.root}>
  <header className={styles.header}><div><span>WCDA EVENTS · FINANCE & COMMERCIAL MANAGEMENT</span><h2>2026/27 Tariffs, Quotations & Incentives</h2><p>Proposed internal service fees. Rates remain pending management approval until formally approved.</p></div><button onClick={()=>void refresh()}>Refresh</button></header>
