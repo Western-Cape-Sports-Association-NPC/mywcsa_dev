@@ -8,6 +8,7 @@ import styles from "./workspace.module.css";
 import StaffConsole from "./staff-console";
 import OfficeCapture from "./office-capture";
 import FinanceDesk from "./finance-desk";
+import FinanceRegister from "./finance-register";
 import OrganiserApplication from "./organiser-application";
 import DocumentsCentre from "./documents-centre";
 import DocumentWorkbench from "./document-workbench";
@@ -22,12 +23,12 @@ const internal: NavGroup[] = [
   {name:"Governance & Safety",items:["Reviews & Endorsements","Safety & Compliance","Inspections & Corrective Actions"]},
   {name:"People & Operations",items:["Contractors & Vendors","Personnel & Rosters","Logistics & Facilities","Access & Accreditation","Live Operations Centre","Incidents & Emergencies"]},
   {name:"Official Documents",items:["Letters & Memoranda","Certificates & Verification","Documents & Records"]},
-  {name:"Finance & Support",items:["Finance & Payments","Correspondence & Cases"]},
+  {name:"Finance & Support",items:["Finance & Payments","Tariffs & Quotations","Correspondence & Cases"]},
   {name:"Intelligence & Control",items:["Reports & Intelligence","Administration & Audit"]},
 ];
 const external: NavGroup[] = [{name:"Organiser Workspace",items:["Dashboard","Event Applications","My Events","Documents & Compliance","Event Operations","Payments & Invoices","Letters & Certificates","Messages & Support"]}];
 const essentialStaff:NavGroup[]=[
- {name:"Everyday tools",items:["Dashboard","Capture in Office","Event Applications","Finance & Payments","Documents & Records","My Work"]},
+ {name:"Everyday tools",items:["Dashboard","Capture in Office","Event Applications","Finance & Payments","Tariffs & Quotations","Documents & Records","My Work"]},
  {name:"Communication",items:["Correspondence & Cases"]},
 ];
 const essentialOrganiser:NavGroup[]=[{name:"Get started",items:["Dashboard","Event Applications","My Events","Documents & Compliance","Payments & Invoices","Messages & Support"]}];
@@ -145,9 +146,10 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
         {actor.mode==="staff"&&isInsight(tab)&&<InsightViews section={tab} actor={actor} events={events}
           onCapture={()=>setTab("Capture in Office")} onFinance={()=>setTab("Finance & Payments")}/>}
         {actor.mode==="staff"&&tab==="Finance & Payments"&&<FinanceDesk actor={actor} events={events}/>}
+        {actor.mode==="staff"&&tab==="Tariffs & Quotations"&&<FinanceRegister actor={actor} events={events}/>}
         {actor.mode==="staff"&&documentSections.includes(tab)&&<DocumentWorkbench key={tab} actor={actor} events={events} section={tab as "Documents & Records"|"Letters & Memoranda"|"Certificates & Verification"} onCapture={()=>setTab("Capture in Office")}/>} 
         {actor.mode==="staff"&&tab==="Correspondence & Cases"&&<CorrespondenceCentre actor={actor} events={events}/>}
-        {actor.mode==="staff"&&tab!=="Capture in Office"&&tab!=="Finance & Payments"&&!documentSections.includes(tab)&&tab!=="Correspondence & Cases"&&!isInsight(tab)&&<StaffConsole key={tab} actor={actor} section={tab} onChange={()=>void refresh()}/>}
+        {actor.mode==="staff"&&tab!=="Capture in Office"&&tab!=="Finance & Payments"&&tab!=="Tariffs & Quotations"&&!documentSections.includes(tab)&&tab!=="Correspondence & Cases"&&!isInsight(tab)&&<StaffConsole key={tab} actor={actor} section={tab} onChange={()=>void refresh()}/>}
         {actor.mode!=="staff"&&registryTabs.includes(tab)&&<section className={styles.glassPanel+" "+styles.registryPanel}>
           <div className={styles.panelHeader}><h2><WorkHubIcon name="clipboard" size={18}/>My Events</h2><button className={styles.secondaryButton} type="button" onClick={()=>void refresh()}>Refresh</button></div>
           {loading?<p className={styles.empty}>Loading event records…</p>:found.length?<div className={styles.tableWrap}><table><thead><tr><th>Reference</th><th>Event</th><th>Organiser</th><th>Venue</th><th>Dates</th><th>Status</th></tr></thead><tbody>{found.map(e=><tr key={e.id}><td className={styles.reference}>{e.reference}</td><td>{e.name}</td><td>{e.organiser_name}</td><td>{e.venue_name}</td><td>{dateZA(e.start_date)} — {dateZA(e.end_date)}</td><td>{readable(e.status)}</td></tr>)}</tbody></table></div>:
