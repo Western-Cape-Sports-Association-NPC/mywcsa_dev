@@ -61,7 +61,7 @@ export async function POST(req:Request){
    if(!Array.isArray(b.items)||b.items.length<1||b.items.length>40)throw new EmsError(400,"Add at least one and no more than 40 quotation line items.");
    const events=await listEmsEvents(actor);
    const event=events.find(e=>e.id===b.eventId);if(!event)throw new EmsError(404,"Select an event in your authorised register.");
-   const catalogue=await emsDatabase<any[]>("wcda_ems_finance_catalog?select=id,code,name,amount_cents,status,category&status=in.(approved,active)");
+   const catalogue=await emsDatabase<any[]>("wcda_ems_finance_catalog?select=id,code,name,amount_cents,status,category,discount_percent,cap_cents,eligibility,starts_on,expires_on&status=in.(approved,active)");
    const byId=new Map(catalogue.map(x=>[x.id,x]));
    let subtotal=0;
    const items=b.items.map((x:any)=>{
@@ -71,9 +71,16 @@ export async function POST(req:Request){
     subtotal+=amount;return {catalog_id:item.id,code:item.code,description:item.name,quantity:qty,unit_amount_cents:Number(item.amount_cents),line_total_cents:amount};
    });
    if(!Number.isSafeInteger(subtotal)||subtotal>1000000000)throw new EmsError(400,"Quotation total exceeds the permitted limit.");
-   const discountPct=Number(b.discountPercent||0);
-   if(!Number.isFinite(discountPct)||discountPct<0||discountPct>100)throw new EmsError(400,"Discount must be between 0 and 100 percent.");
-   const discount=Math.round(subtotal*discountPct/100);
+   const discountItem=b.discountCatalogId?byId.get(String(b.discountCatalogId)):null;
+   if(b.discountCatalogId&&(!discountItem||!["grant","international_level","discount"].includes(discountItem.category)))
+    throw new EmsError(400,"Choose one approved grant or concession from the finance register. Unregistered manual discounts are not allowed.");
+   const today=new Intl.DateTimeFormat("en-CA",{timeZone:"Africa/Johannesburg",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+   if(discountItem&&((discountItem.starts_on&&String(discountItem.starts_on)>today)||(discountItem.expires_on&&String(discountItem.expires_on)<today)))
+    throw new EmsError(400,"The selected grant or concession is outside its approved validity period.");
+   const discountPct=Number(discountItem?.discount_percent||0);
+   if(!Number.isFinite(discountPct)||discountPct<0||discountPct>100)throw new EmsError(400,"The selected approved discount is invalid.");
+   const calculatedDiscount=Math.round(subtotal*discountPct/100);
+   const discount=discountItem?.cap_cents==null?calculatedDiscount:Math.min(calculatedDiscount,Number(discountItem.cap_cents));
    const external=Number(b.externalCostsCents||0);
    if(!Number.isSafeInteger(external)||external<0||external>1000000000)throw new EmsError(400,"External costs must be a valid amount.");
    const total=subtotal-discount+external;
@@ -82,7 +89,7 @@ export async function POST(req:Request){
    const rows=await emsDatabase<any[]>("wcda_ems_quotations",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify({
     quote_number:quoteNumber,event_id:event.id,organiser_name:event.organiser_name,event_name:event.name,event_start:event.start_date,event_end:event.end_date,
     attendance:null,line_items:items,subtotal_cents:subtotal,discount_cents:discount,grant_cents:0,external_costs_cents:external,vat_cents:0,total_cents:total,
-    terms:{validity_days:14,initial_payment_percent:50,discount_percent:discountPct,vat_note:"VAT treatment subject to registration and applicable law",municipal_and_third_party_costs_separate:true},
+    terms:{validity_days:14,initial_payment_percent:50,discount_percent:discountPct,discount_catalog_id:discountItem?.id||null,discount_code:discountItem?.code||null,discount_name:discountItem?.name||null,discount_eligibility:discountItem?.eligibility||null,vat_note:"VAT treatment subject to registration and applicable law",municipal_and_third_party_costs_separate:true},
     status:"pending_approval",valid_until:validUntil,prepared_by_email:actor.email
    })});
    await audit("quotation",rows[0].id,actor.email,"quotation.created","Quotation prepared and submitted for independent approval",{quote_number:quoteNumber,event_id:event.id,total_cents:total});
