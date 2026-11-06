@@ -81,7 +81,7 @@ export async function POST(req:Request){
    const validUntil=new Date(Date.now()+14*86400000).toISOString().slice(0,10);
    const rows=await emsDatabase<any[]>("wcda_ems_quotations",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify({
     quote_number:quoteNumber,event_id:event.id,organiser_name:event.organiser_name,event_name:event.name,event_start:event.start_date,event_end:event.end_date,
-    attendance:event.estimated_attendance??null,line_items:items,subtotal_cents:subtotal,discount_cents:discount,grant_cents:0,external_costs_cents:external,vat_cents:0,total_cents:total,
+    attendance:null,line_items:items,subtotal_cents:subtotal,discount_cents:discount,grant_cents:0,external_costs_cents:external,vat_cents:0,total_cents:total,
     terms:{validity_days:14,initial_payment_percent:50,discount_percent:discountPct,vat_note:"VAT treatment subject to registration and applicable law",municipal_and_third_party_costs_separate:true},
     status:"pending_approval",valid_until:validUntil,prepared_by_email:actor.email
    })});
