@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Sign in to MyWCSA GovApps as a learner, athlete, participant, volunteer or other individual user.",
 };
 
-type Query = { returnTo?: string; mode?: string; error?: string; created?: string };
+type Query = { returnTo?: string; mode?: string; error?: string; created?: string; wcda?: string; request?: string };
 function safeDestination(value?: string) {
   return value && /^\/external(?:\/[^\\\r\n?#]*)?(?:\?[^\\\r\n#]*)?$/.test(value) ? value : "/external";
 }
