@@ -68,7 +68,7 @@ export async function POST(request: Request) {
             "",
             "WCDA Events · Events & Safety Department",
             "ServiceDesk@wcsports.co.za",
-          ].join("\\n"),
+          ].join("\n"),
         });
         emailNotification = "accepted";
       } catch {
