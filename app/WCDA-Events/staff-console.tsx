@@ -67,11 +67,11 @@ export default function StaffConsole({actor,section,onChange}:{actor:EmsActor;se
  const [reviewDue,setReviewDue]=useState("");
  const [decisionReason,setDecisionReason]=useState("");
  const canDecide=["super_admin","executive","registrar","manager"].includes(actor.role||"");
- const readyForEndorsement=Boolean(chosen && chosen.event.status==="under_review" && chosen.checks.length>0 && chosen.checks.every(x=>x.status!=="pending") && !["unassessed","critical"].includes(chosen.event.risk_level||"unassessed"));
  const allowed=canReview(actor.role);
  const edit=isEditable(actor.role);
  const event=events.find(e=>e.id===selected);
  const chosen=details?.event?.id===selected?details:null;
+ const readyForEndorsement=Boolean(chosen && chosen.event.status==="under_review" && chosen.checks.length>0 && chosen.checks.every(x=>x.status!=="pending") && !["unassessed","critical"].includes(chosen.event.risk_level||"unassessed"));
  const category=sectionCategory[section]||"";
  const visibleTasks=useMemo(()=>tasks.filter(t=>!category||t.category===category),[tasks,category]);
  const identity=sectionIdentity[section];
