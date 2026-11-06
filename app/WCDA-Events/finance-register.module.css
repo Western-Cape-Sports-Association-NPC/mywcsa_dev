@@ -1,1 +1,39 @@
-.root{display:grid;gap:16px;color:#233858;font-family:Poppins,"Segoe UI",sans-serif}.header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.header span{font-size:10px;letter-spacing:1.5px;color:#001484;font-weight:750}.header h2{font-size:22px;margin:5px 0}.header p,.panel p,.note{font-size:11px;color:#60748e;line-height:1.65}.header button,.panel button{border:1px solid #cbd8eb;background:#001484;color:#fff;border-radius:6px;padding:8px 12px;font:600 11px Poppins, sans-serif;cursor:pointer}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.stats div{background:#fff;border:1px solid #dbe3ef;padding:13px 15px;display:grid;gap:4px}.stats b{font-size:21px;color:#001484}.stats span{font-size:10px;color:#657993}.panel{background:#fff;border:1px solid #d9e2ef;padding:17px;min-width:0}.panel h3{font-size:15px;margin:0 0 4px;color:#17345c}.filters{display:flex;gap:8px;margin:13px 0}.filters input{flex:1}.filters input,.filters select,.panel select,.calculation input{border:1px solid #cbd7e6;padding:9px 10px;border-radius:5px;background:#fff;color:#233858;font:11px Poppins,sans-serif}.table{overflow:auto;margin-top:12px}table{width:100%;border-collapse:collapse;font-size:10px;text-align:left}th{background:#001484;color:white;padding:10px;white-space:nowrap;font-weight:600}td{padding:10px;border-bottom:1px solid #e6ebf2;vertical-align:top;min-width:90px}td b{display:block;color:#233858}td small{display:block;color:#72839a;margin-top:4px;line-height:1.5}td span[data-status]{display:inline-block;background:#edf1f7;color:#53657e;padding:5px 7px;border-radius:3px;text-transform:capitalize;white-space:nowrap}td span[data-status="active"]{background:#e5f4eb;color:#226440}td span[data-status="pending_approval"]{background:#fff2dc;color:#875b0b}.panel td button{margin:2px;padding:6px 8px}.panel label{font-size:11px;color:#405979}.pickList{max-height:280px;overflow:auto;border:1px solid #e0e7f0;margin:12px 0}.pickList label{display:flex;align-items:center;gap:9px;padding:8px 10px;border-bottom:1px solid #edf0f5}.pickList label span{flex:1}.pickList small{display:block;color:#8190a4}.pickList input[type=number]{width:58px;padding:5px;border:1px solid #ccd6e4}.calculation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-width:650px}.calculation label{display:grid;gap:5px}.calculation p,.calculation h3{grid-column:1/-1;display:flex;justify-content:space-between;margin:3px 0;padding-bottom:7px;border-bottom:1px solid #e7edf4;font-size:11px}.calculation h3{font-size:14px;color:#001484}.calculation small{grid-column:1/-1;color:#71839b;font-size:10px}.calculation button{grid-column:1/-1;justify-self:start}.error,.message{padding:10px 12px;font-size:11px;background:#fff1f1;color:#9b2d3b;border:1px solid #ebc8cc}.message{background:#edf8f1;color:#226344;border-color:#c9e5d3}.note{border-left:3px solid #001484;padding:10px 13px;background:#f5f7fb}@media(max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{flex-direction:column}.calculation{grid-template-columns:1fr}.calculation p,.calculation h3,.calculation small,.calculation button{grid-column:1}.panel{padding:12px}}
+.root{display:grid;gap:16px;color:#233858;font-family:Poppins,"Segoe UI",sans-serif}
+.header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.header span{font-size:10px;letter-spacing:1.5px;color:#001484;font-weight:750}
+.header h2{font-size:22px;margin:5px 0}
+.header p,.panel p,.note{font-size:11px;color:#60748e;line-height:1.65}
+.header button,.panel button{border:1px solid #cbd8eb;background:#001484;color:#fff;border-radius:5px;padding:8px 12px;font:600 11px Poppins,sans-serif;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stats div{background:#fff;border:1px solid #dbe3ef;padding:13px 15px;display:grid;gap:4px}
+.stats b{font-size:21px;color:#001484}.stats span{font-size:10px;color:#657993}
+.panel{background:#fff;border:1px solid #d9e2ef;padding:17px;min-width:0}
+.panel h3{font-size:15px;margin:0 0 4px;color:#17345c}
+.filters{display:flex;gap:8px;margin:13px 0}
+.filters input,.filters select,.panel select,.calculation input{border:1px solid #cbd7e6;padding:9px 10px;border-radius:5px;background:#fff;color:#233858;font:11px Poppins,sans-serif}
+.filters input{flex:1}
+.table{overflow:auto;margin-top:12px}
+.table table{width:100%;border-collapse:collapse;font-size:10px;text-align:left}
+.table :global(th){background:#001484;color:white;padding:10px;white-space:nowrap;font-weight:600}
+.table :global(td){padding:10px;border-bottom:1px solid #e6ebf2;vertical-align:top;min-width:90px}
+.table :global(td b){display:block;color:#233858}
+.table :global(td small){display:block;color:#72839a;margin-top:4px;line-height:1.5}
+.table :global(td span[data-status]){display:inline-block;background:#edf1f7;color:#53657e;padding:5px 7px;border-radius:3px;text-transform:capitalize;white-space:nowrap}
+.table :global(td span[data-status="active"]){background:#e5f4eb;color:#226440}
+.table :global(td span[data-status="pending_approval"]){background:#fff2dc;color:#875b0b}
+.panel td button{margin:2px;padding:6px 8px}
+.panel label{font-size:11px;color:#405979}
+.pickList{max-height:280px;overflow:auto;border:1px solid #e0e7f0;margin:12px 0}
+.pickList label{display:flex;align-items:center;gap:9px;padding:8px 10px;border-bottom:1px solid #edf0f5}
+.pickList label span{flex:1}.pickList small{display:block;color:#8190a4}
+.pickList input[type=number]{width:58px;padding:5px;border:1px solid #ccd6e4}
+.calculation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-width:650px}
+.calculation label{display:grid;gap:5px}
+.calculation p,.calculation h3{grid-column:1/-1;display:flex;justify-content:space-between;margin:3px 0;padding-bottom:7px;border-bottom:1px solid #e7edf4;font-size:11px}
+.calculation h3{font-size:14px;color:#001484}
+.calculation small{grid-column:1/-1;color:#71839b;font-size:10px}
+.calculation button{grid-column:1/-1;justify-self:start}
+.error,.message{padding:10px 12px;font-size:11px;background:#fff1f1;color:#9b2d3b;border:1px solid #ebc8cc}
+.message{background:#edf8f1;color:#226344;border-color:#c9e5d3}
+.note{border-left:3px solid #001484;padding:10px 13px;background:#f5f7fb}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{flex-direction:column}.calculation{grid-template-columns:1fr}.calculation p,.calculation h3,.calculation small,.calculation button{grid-column:1}.panel{padding:12px}}
