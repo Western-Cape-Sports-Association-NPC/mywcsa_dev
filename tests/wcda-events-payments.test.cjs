@@ -87,6 +87,10 @@ test("WCDA Events payment protection and provider settlement regression", async 
 
     await t.test("only properly formatted WCDA references are accepted", () => {
       assert.equal(eventPaymentReference(reference), true);
+      assert.equal(eventPaymentReference("ESC037651"), true);
+      assert.equal(eventPaymentReference("ESC0001"), false);
+      assert.equal(eventPaymentReference("ESC12345"), false);
+      assert.equal(eventPaymentReference("ESC1234567"), false);
       assert.equal(eventPaymentReference("wcsa-" + "a".repeat(32)), false);
       assert.equal(eventPaymentReference("wcda-" + "b".repeat(31)), false);
       assert.equal(eventPaymentReference("wcda-" + "G".repeat(32)), false);
