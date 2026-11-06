@@ -53,7 +53,7 @@ export async function POST(request:Request){
   if(!events.some(e=>e.id===id))throw new EmsError(403,"You cannot update this event.");
   if((action==="set_case"||action==="add_check"||action==="check_status") && !["super_admin","executive","registrar","manager","assessor","compliance"].includes(actor.role||""))
    throw new EmsError(403,"An authorised WCDA review role is required.");
-  const payload=data.payload && typeof data.payload==="object" && !Array.isArray(data.payload)?data.payload:{};
+  const payload:Record<string,unknown>=data.payload && typeof data.payload==="object" && !Array.isArray(data.payload)?data.payload as Record<string,unknown>:{};
   if(action==="formal_decision" && !["super_admin","executive","registrar","manager"].includes(actor.role||""))
     throw new EmsError(403,"Only an appointed registrar, manager or executive may record a formal decision.");
   const before = action === "set_case" || action === "formal_decision"
