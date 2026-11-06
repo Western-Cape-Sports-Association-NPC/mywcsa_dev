@@ -46,7 +46,8 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  y+=17;pdf.setFont("helvetica","bold");pdf.setFontSize(10);pdf.text("Account Details",left,y);y+=7;
  pdf.setFont("helvetica","normal");pdf.setFontSize(9);
  for(const line of ["GoTyme Bank","Account Name: Western Cape Sports Association NPC","Account #: 53003631141","Branch Code: 678910","Due Date: "+date(dueDate.toISOString()),""]) {pdf.text(line,left,y);y+=5;}
- if(invoice.status==="pending_approval"||invoice.status==="cancelled"){pdf.setTextColor(170,50,50);pdf.setFont("helvetica","bold");pdf.setFontSize(16);pdf.text(invoice.status==="cancelled"?"CANCELLED":"DRAFT - NOT APPROVED",105,260,{align:"center"});}\n pdf.setFontSize(7.5);pdf.setTextColor(93,107,129);
+ if(invoice.status==="pending_approval"||invoice.status==="cancelled"){pdf.setTextColor(170,50,50);pdf.setFont("helvetica","bold");pdf.setFontSize(16);pdf.text(invoice.status==="cancelled"?"CANCELLED":"DRAFT - NOT APPROVED",105,260,{align:"center"});}
+ pdf.setFontSize(7.5);pdf.setTextColor(93,107,129);
  const note="VAT shown as R0.00. Supplier VAT registration details have not been supplied to this document engine. Confirm WCSA VAT registration and VAT number before treating this as a statutory tax invoice or charging VAT.";
  for(const line of pdf.splitTextToSize(note,width) as string[]){pdf.text(line,left,y);y+=4;}
  y+=5;pdf.setDrawColor(0,20,132);pdf.line(left,y,right,y);y+=6;
