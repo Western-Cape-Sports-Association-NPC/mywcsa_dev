@@ -47,21 +47,30 @@ export async function POST(request:Request){
   try{data=JSON.parse(raw) as Record<string,unknown>;}catch{throw new EmsError(400,"Invalid update.");}
   const id=String(data.eventId||"");
   const action=String(data.action||"");
-  const allowed=["add_note","create_task","task_status","set_case","add_check","check_status"];
+  const allowed=["add_note","create_task","task_status","set_case","formal_decision","add_check","check_status"];
   if(!uuid.test(id)||!allowed.includes(action))throw new EmsError(400,"Invalid event or action.");
   const events=await listEmsEvents(actor);
   if(!events.some(e=>e.id===id))throw new EmsError(403,"You cannot update this event.");
   if((action==="set_case"||action==="add_check"||action==="check_status") && !["super_admin","executive","registrar","manager","assessor","compliance"].includes(actor.role||""))
    throw new EmsError(403,"An authorised WCDA review role is required.");
   const payload=data.payload && typeof data.payload==="object" && !Array.isArray(data.payload)?data.payload:{};
-  const before = action === "set_case"
+  if(action==="formal_decision" && !["super_admin","executive","registrar","manager"].includes(actor.role||""))
+    throw new EmsError(403,"Only an appointed registrar, manager or executive may record a formal decision.");
+  const before = action === "set_case" || action === "formal_decision"
     ? (await emsDatabase<Array<{reference:string;name:string;status:string;organiser_email:string|null;applicant_contact_email:string|null}>>(
         "wcda_ems_events?select=reference,name,status,organiser_email,applicant_contact_email&id=eq."+enc(id)+"&limit=1"
       ))[0]
     : null;
-  const record=await emsDatabase<Record<string,unknown>>("rpc/wcda_ems_staff_action",{
-   method:"POST",body:JSON.stringify({p_actor_id:actor.id,p_actor_email:actor.email,p_event_id:id,p_action:action,p_payload:payload})
-  });
+  const record=action==="formal_decision"
+    ? await emsDatabase<Record<string,unknown>>("rpc/wcda_ems_event_decision",{
+        method:"POST",body:JSON.stringify({
+          p_actor_id:actor.id,p_actor_email:actor.email,p_event_id:id,
+          p_decision:payload.decision,p_reason:payload.reason,
+        })
+      })
+    : await emsDatabase<Record<string,unknown>>("rpc/wcda_ems_staff_action",{
+        method:"POST",body:JSON.stringify({p_actor_id:actor.id,p_actor_email:actor.email,p_event_id:id,p_action:action,p_payload:payload})
+      });
   let emailNotification: "accepted" | "disabled" | "not_sent" | "not_required" = "not_required";
   const nextStatus=String(record.status||"");
   if(before && before.status!==nextStatus) {
