@@ -76,7 +76,7 @@ export async function POST(request:Request){
   if(before && before.status!==nextStatus) {
     const recipient=String(before.applicant_contact_email||before.organiser_email||"").trim().toLowerCase();
     emailNotification="disabled";
-    if(mailConfigured() && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient)) {
+    if(mailConfigured() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
       const descriptions:Record<string,string>={
         under_review:"Your application has moved into WCDA assessment and vetting.",
         corrections_requested:"WCDA requires additional information or corrections before assessment can continue. Sign in to your organiser workspace and review the case messages.",
@@ -104,7 +104,7 @@ export async function POST(request:Request){
             "",
             "WCDA Events · Events & Safety Department",
             "ServiceDesk@wcsports.co.za",
-          ].join("\\n"),
+          ].join("\n"),
         });
         emailNotification="accepted";
       } catch { emailNotification="not_sent"; }
