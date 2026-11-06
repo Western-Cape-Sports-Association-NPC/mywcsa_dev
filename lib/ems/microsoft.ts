@@ -12,7 +12,7 @@ function graphSettings():GraphSettings {
   throw new EmsError(503,"The approved Microsoft Graph application has not been fully configured.");
  return {tenant,clientId,clientSecret};
 }
-export const mailConfigured=()=>process.env.WCDA_GRAPH_SEND_ENABLED==="true";
+export const mailConfigured=()=>process.env.GOVAPPS_MAIL_ENABLED==="true" && Boolean(value("GOVAPPS_MAIL_CLIENT_SECRET"));
 // Archive access must be reviewed independently of the Graph deployment flag.
 export const archiveConfigured=()=>process.env.WCDA_GRAPH_ARCHIVE_ENABLED==="true"&&process.env.WCDA_SHAREPOINT_ACCESS_REVIEWED==="true";
 
