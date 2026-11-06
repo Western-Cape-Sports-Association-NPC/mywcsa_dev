@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from "react";
 import type {EmsActor,EmsEvent} from "@/lib/ems/types";
-import {jsPDF} from "jspdf";
+import {exportWcdaDraftPdf} from "@/lib/ems/document-engine";
 import styles from "./governance-desk.module.css";
 import CertificateComposer from "./certificate-composer";
 
@@ -175,44 +175,7 @@ export default function GovernanceDesk({actor,eventId,reference,section,event,on
   setNotice("The "+nice(kind)+" template is ready to edit. Review all bracketed fields before saving.");
  }
  function exportDraft(d:Draft){
-  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  const pageWidth=210;
-  const contentWidth=172;
-  const paragraphs=d.body.split("\n");
-  let y=60;
-  let page=1;
-  const header=()=>{
-   pdf.setDrawColor(0,20,132);pdf.setLineWidth(1.2);pdf.line(19,18,191,18);
-   pdf.setTextColor(0,20,132);pdf.setFont("helvetica","bold");pdf.setFontSize(13);
-   pdf.text("WESTERN CAPE DEVELOPMENT AUTHORITY",19,27);
-   pdf.setFontSize(9);pdf.text("EVENTS & SAFETY DEPARTMENT",19,34);
-   pdf.setTextColor(45,66,101);pdf.setFontSize(9);
-   pdf.text("INTERNAL DOCUMENT DRAFT  |  "+reference,19,43);
-   pdf.setDrawColor(195,210,232);pdf.line(19,48,191,48);
-  };
-  const footer=()=>{
-   pdf.setTextColor(165,60,60);pdf.setFont("helvetica","bold");pdf.setFontSize(18);
-   pdf.text("DRAFT - NOT ISSUED",pageWidth/2,277,{align:"center"});
-   pdf.setFontSize(8);pdf.setTextColor(88,99,120);
-   pdf.text("Not an issued certificate, signed endorsement or statutory permit.  Page "+page,19,287);
-  };
-  header();
-  pdf.setFont("helvetica","bold");pdf.setTextColor(17,39,90);pdf.setFontSize(13);
-  for(const line of pdf.splitTextToSize(d.title,contentWidth) as string[]){
-   pdf.text(line,19,y);y+=6.5;
-  }
-  y+=5;
-  pdf.setFont("helvetica","normal");pdf.setFontSize(10);pdf.setTextColor(38,54,77);
-  for(const paragraph of paragraphs){
-   const lines=pdf.splitTextToSize(paragraph||" ",contentWidth) as string[];
-   for(const line of lines){
-    if(y>254){footer();pdf.addPage();page++;header();y=60;}
-    pdf.text(line,19,y);y+=5.5;
-   }
-   y+=2;
-  }
-  footer();
-  pdf.save("WCDA-"+reference.replaceAll(" ","-").replaceAll("/","-")+"-DRAFT.pdf");
+  exportWcdaDraftPdf(d.title,d.body,reference);
  }
  async function copyDraft(d:Draft){
   try{
