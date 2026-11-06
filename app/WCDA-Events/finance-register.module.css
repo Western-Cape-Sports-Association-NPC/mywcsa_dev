@@ -37,3 +37,9 @@
 .message{background:#edf8f1;color:#226344;border-color:#c9e5d3}
 .note{border-left:3px solid #001484;padding:10px 13px;background:#f5f7fb}
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{flex-direction:column}.calculation{grid-template-columns:1fr}.calculation p,.calculation h3,.calculation small,.calculation button{grid-column:1}.panel{padding:12px}}
+.bulkTools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;margin:12px 0;border:1px solid #d7e1ef;background:#f5f8fd;border-radius:6px}
+.bulkTools>div{display:grid;gap:3px;margin-right:auto}.bulkTools strong{font-size:11px;color:#17345c}.bulkTools span{font-size:9px;color:#71839b}
+.bulkTools button{padding:7px 10px;font-size:10px}
+.bulkTools .secondary{background:#fff;color:#001484;border:1px solid #cbd8eb}
+.bulkTools textarea{flex-basis:100%;width:100%;border:1px solid #cbd7e6;border-radius:5px;padding:8px;font:11px Poppins,sans-serif;color:#233858;resize:vertical}
+.table :global(input[type="checkbox"]){width:15px;height:15px;accent-color:#001484}
