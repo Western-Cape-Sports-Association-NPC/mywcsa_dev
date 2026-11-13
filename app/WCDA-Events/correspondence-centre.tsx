@@ -13,7 +13,27 @@ const types=[
  {value:"payment_notice",label:"Finance correspondence"},
  {value:"general",label:"General event correspondence"},
 ];
-const title=(s:string)=>s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase());
+const title=(s:string)=>s.replaceAll("_"," ").replace(/\\b\\w/g,c=>c.toUpperCase());
+const templates=[
+ {id:"billing",kind:"payment_notice",icon:"🧾",tone:"blue",name:"Billing & invoice",tag:"FINANCE",desc:"Issue an invoice with a clear amount, due date and payment reference.",subject:"Your WCDA Events invoice · {{reference}}"},
+ {id:"approval",kind:"status_update",icon:"🎉",tone:"green",name:"Event approval",tag:"DECISION",desc:"Celebrate an approved event and clearly communicate its conditions.",subject:"Your event has been approved · {{reference}}"},
+ {id:"settlement",kind:"payment_notice",icon:"✅",tone:"violet",name:"Account settlement",tag:"PAYMENTS",desc:"Confirm funds received, receipt details and the remaining balance.",subject:"Payment received · Account settlement · {{reference}}"},
+ {id:"outstanding",kind:"payment_notice",icon:"⏰",tone:"amber",name:"Outstanding account",tag:"FINANCE",desc:"Send a courteous balance reminder with clear next steps.",subject:"Action required · Outstanding account · {{reference}}"},
+];
+function emailTemplate(id:string,event:EmsEvent){
+ const ref=event.reference||"{{event_reference}}",name=event.name||"{{event_name}}",organiser=event.organiser_name||"{{organiser_name}}";
+ const header="WCDA EVENTS  |  WESTERN CAPE DEVELOPMENT AUTHORITY\\nUNITED IN SERVICE · CONNECTED IN ACTION\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+ const footer="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nWCDA EVENTS  •  Western Cape Sports Association NPC\\nWCDA.Events@govapps.wcsports.co.za\\nThis is an official case communication. Please quote "+ref+" in all replies.";
+ const sign="Kind regards,\\nWCDA Events Team\\n";
+ const common="Event: "+name+"\\nCase reference: "+ref+"\\nOrganiser: "+organiser+"\\n";
+ const content:Record<string,{subject:string;body:string}>={
+  billing:{subject:"Your WCDA Events invoice · "+ref,body:"Dear "+organiser+",\\n\\nThank you for working with WCDA Events. Your invoice is ready.\\n\\n📋 EVENT DETAILS\\n"+common+"Invoice number: {{invoice_number}}\\nInvoice date: {{invoice_date}}\\nDue date: {{due_date}}\\n\\n💳 PAYMENT SUMMARY\\nInvoice amount: {{invoice_amount}}\\nAmount payable: {{amount_due}}\\nPayment reference: {{payment_reference}}\\n\\nPlease use the approved payment instructions on the attached invoice and quote the payment reference exactly. If you need help, contact {{finance_contact}}.\\n\\n"+sign+footer},
+  approval:{subject:"Your event has been approved · "+ref,body:"Dear "+organiser+",\\n\\n🎉 GOOD NEWS! Your event application has been approved by WCDA Events.\\n\\n📍 APPROVED EVENT\\n"+common+"Approved dates: {{event_dates}}\\nVenue: "+(event.venue_name||"{{venue}}")+"\\nDecision date: {{approval_date}}\\n\\n⭐ APPROVAL CONDITIONS\\n{{approval_conditions}}\\n\\nPlease follow the conditions above. Any material changes to the dates, venue or programme must be submitted for review. This approval does not replace any separate municipal, venue, safety or statutory permissions that may be required.\\n\\nWe wish you a successful and memorable event!\\n\\n"+sign+footer},
+  settlement:{subject:"Payment received · Account settlement · "+ref,body:"Dear "+organiser+",\\n\\n✅ PAYMENT RECEIVED — THANK YOU!\\n\\nWe have recorded your payment. Here is your account confirmation.\\n\\n📋 ACCOUNT DETAILS\\n"+common+"Invoice number(s): {{invoice_numbers}}\\nPayment date: {{payment_date}}\\nPayment reference: {{payment_reference}}\\nReceipt number: {{receipt_number}}\\n\\n💰 SETTLEMENT SUMMARY\\nOriginal amount: {{original_amount}}\\nAmount received: {{amount_received}}\\nRemaining balance: {{remaining_balance}}\\nSettlement status: {{settlement_status}}\\n\\nPlease keep this message and your receipt for your records. Contact {{finance_contact}} if you need an allocation review.\\n\\n"+sign+footer},
+  outstanding:{subject:"Action required · Outstanding account · "+ref,body:"Dear "+organiser+",\\n\\nThis is a friendly reminder that our records show an outstanding balance on your WCDA Events account.\\n\\n📋 ACCOUNT DETAILS\\n"+common+"Invoice number: {{invoice_number}}\\nInvoice date: {{invoice_date}}\\nOriginal due date: {{due_date}}\\n\\n⏳ BALANCE SUMMARY\\nOriginal invoice amount: {{invoice_amount}}\\nPayments received: {{payments_received}}\\nOutstanding balance: {{outstanding_amount}}\\n\\nPlease settle the balance using the approved payment instructions on your invoice. If you have already paid, send proof of payment to {{finance_contact}} so we can update your account. If you need a reconciliation or wish to query the balance, please contact our Finance Office and quote the invoice reference.\\n\\nThank you for your prompt attention.\\n\\n"+sign+footer}
+ };
+ return content[id]||content.billing;
+}
 const day=(v:string|null)=>v?new Date(v).toLocaleString("en-ZA",{dateStyle:"medium",timeStyle:"short"}):"—";
 export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;events:EmsEvent[]}){
  const isStaff=actor.mode==="staff";
@@ -30,7 +50,7 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  const[subject,setSubject]=useState("");
  const[body,setBody]=useState("");
  const[expanded,setExpanded]=useState<string|null>(null);
- const[filter,setFilter]=useState("");
+ const[filter,setFilter]=useState("");\n const[selectedTemplate,setSelectedTemplate]=useState<string>("");
  const eventFor=(id:string)=>events.find(e=>e.id===id);
  const visible=useMemo(()=>records.filter(r=>!filter||r.event_id===filter),[records,filter]);
  async function refresh(){
@@ -61,7 +81,7 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
   }catch(e){setError(e instanceof Error?e.message:"Correspondence action failed.");}
   finally{setBusy(false);}
  }
- function submit(e:FormEvent<HTMLFormElement>){
+ function applyTemplate(id:string){\n  if(!eventId){setError("Choose an event case first, then select a template.");return;}\n  const event=eventFor(eventId);if(!event){setError("The selected event could not be loaded.");return;}\n  const template=emailTemplate(id,event);setKind(templates.find(t=>t.id===id)?.kind||"general");setSubject(template.subject);setBody(template.body);setSelectedTemplate(id);setNotice("Template loaded. Complete every {{placeholder}} and verify the case details before saving.");\n }\n function submit(e:FormEvent<HTMLFormElement>){
   e.preventDefault();
   if(!eventId||subject.trim().length<8||body.trim().length<15)return;
   void update({action:"prepare",eventId,kind,subject,body});
@@ -78,8 +98,8 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p className={styles.success} role="status">{notice}</p>}
   {canCompose&&<form className={styles.card} onSubmit={submit}>
-   <div className={styles.cardTitle}><h3>Prepare outgoing correspondence</h3><span>Draft · Not yet sent</span></div>
-   <p className={styles.small}>The recipient comes from the registered event applicant, not from an address typed into this form. Another authorised manager must approve before dispatch.</p>
+   <div className={styles.composeHero}><div className={styles.brandMark}>WCDA<span>EVENTS</span></div><div><span className={styles.overline}>OFFICIAL COMMUNICATIONS STUDIO</span><h3>Make every message count.</h3><p>Choose a ready-made design, personalise the details and send it through the approved review process.</p></div><span className={styles.draftPill}>✦ DRAFT STUDIO</span></div>\n   <div className={styles.cardTitle}><h3>Choose an email template</h3><span>4 branded templates</span></div>\n   <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
+   <p className={styles.small}>The recipient comes from the registered event applicant, not from an address typed into this form. Another authorised manager must approve before dispatch. Templates include a WCDA Events text masthead and branded signature in the outgoing email.</p>
    <div className={styles.form}>
     <label>Event case *<select required value={eventId} onChange={e=>setEventId(e.target.value)}>
      <option value="">Select an event case</option>{events.map(e=><option key={e.id} value={e.id}>{e.reference} · {e.name}</option>)}
