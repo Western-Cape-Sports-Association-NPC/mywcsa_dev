@@ -64,3 +64,7 @@
 .previewFooter{padding:14px 22px;background:#f1f5fb;border-top:1px solid #e2eaf4;color:#657b99;font-size:8px;line-height:1.8;letter-spacing:.7px}
 @media(max-width:900px){.templateGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.composeHero{align-items:flex-start;padding:16px}.brandMark{flex-basis:48px;height:48px}.draftPill{display:none}.templateGrid{grid-template-columns:1fr 1fr}.templateCard{padding:11px}.templateCard small{min-height:60px}.previewBody{padding:15px}}
+
+.templateCase{display:flex;flex-direction:column;gap:8px;max-width:560px;margin:4px 0 20px;font-size:9px;font-weight:800;letter-spacing:1.1px;color:#4f6786}
+.templateCase select{width:100%;padding:12px 14px;border:1px solid #cbd9eb;border-radius:10px;background:#fff;color:#203f67;font:500 11px Poppins,"Segoe UI",sans-serif;letter-spacing:0}
+.templateCase select:focus{outline:0;border-color:#001484;box-shadow:0 0 0 3px #00148418}
