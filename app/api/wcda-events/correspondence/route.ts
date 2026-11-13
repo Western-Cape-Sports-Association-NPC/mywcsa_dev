@@ -68,7 +68,7 @@ export async function POST(request:Request){
     const record=await action("approve",actor,eventId,msg.id);
     return Response.json({message:record},{headers});
   }
-  if(/\\{\\{[^}]+\\}\\}/.test(msg.subject)||/\\{\\{[^}]+\\}\\}/.test(msg.body))\n    throw new EmsError(400,"Complete every {{placeholder}} in this template before requesting dispatch. No email has been sent.");\n  if(!mailConfigured())throw new EmsError(503,"Microsoft Graph sending is disabled. No message has been sent.");
+  if(/\{\{[^}]+\}\}/.test(msg.subject)||/\{\{[^}]+\}\}/.test(msg.body))\n    throw new EmsError(400,"Complete every {{placeholder}} in this template before requesting dispatch. No email has been sent.");\n  if(!mailConfigured())throw new EmsError(503,"Microsoft Graph sending is disabled. No message has been sent.");
   // Claim before the external effect, so repeated clicks / requests cannot send duplicate emails.
   const claimed=await action("claim",actor,eventId,msg.id);
   try{
