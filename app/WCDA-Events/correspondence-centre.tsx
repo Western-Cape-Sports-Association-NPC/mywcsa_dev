@@ -82,7 +82,12 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
   }catch(e){setError(e instanceof Error?e.message:"Correspondence action failed.");}
   finally{setBusy(false);}
  }
- function applyTemplate(id:string){\n  if(!eventId){setError("Choose an event case first, then select a template.");return;}\n  const event=eventFor(eventId);if(!event){setError("The selected event could not be loaded.");return;}\n  const template=emailTemplate(id,event);setKind(templates.find(t=>t.id===id)?.kind||"general");setSubject(template.subject);setBody(template.body);setSelectedTemplate(id);setNotice("Template loaded. Complete every {{placeholder}} and verify the case details before saving.");\n }\n function submit(e:FormEvent<HTMLFormElement>){
+ function applyTemplate(id:string){
+  if(!eventId){setError("Choose an event case first, then select a template.");return;}
+  const event=eventFor(eventId);if(!event){setError("The selected event could not be loaded.");return;}
+  const template=emailTemplate(id,event);setKind(templates.find(t=>t.id===id)?.kind||"general");setSubject(template.subject);setBody(template.body);setSelectedTemplate(id);setNotice("Template loaded. Complete every {{placeholder}} and verify the case details before saving.");
+ }
+ function submit(e:FormEvent<HTMLFormElement>){
   e.preventDefault();
   if(!eventId||subject.trim().length<8||body.trim().length<15)return;
   void update({action:"prepare",eventId,kind,subject,body});
