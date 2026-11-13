@@ -12,7 +12,7 @@ function graphSettings():GraphSettings {
   throw new EmsError(503,"The approved Microsoft Graph application has not been fully configured.");
  return {tenant,clientId,clientSecret};
 }
-export const mailConfigured=()=>process.env.WCDA_GRAPH_SEND_ENABLED==="true";
+export const mailConfigured=()=>process.env.GOVAPPS_MAIL_ENABLED==="true" && Boolean(value("GOVAPPS_MAIL_CLIENT_SECRET"));
 // Archive access must be reviewed independently of the Graph deployment flag.
 export const archiveConfigured=()=>process.env.WCDA_GRAPH_ARCHIVE_ENABLED==="true"&&process.env.WCDA_SHAREPOINT_ACCESS_REVIEWED==="true";
 
@@ -41,10 +41,26 @@ async function token(c:GraphSettings):Promise<string>{
 }
 function graphError(r:Response){return new EmsError(r.status===403?403:502,"The Microsoft Graph request was not accepted (HTTP "+r.status+"). Verify the mailbox, site permission and service configuration.");}
 function mailbox(){
- const from=value("GOVAPPS_MAIL_FROM").toLowerCase();
- if(!/^[^@\s]+@(?:[a-z0-9-]+\.)*wcsports\.co\.za$/.test(from))
-   throw new EmsError(503,"Configure a verified WCSA sender mailbox for WCDA correspondence.");
+ // WCDA correspondence must use its own approved shared mailbox. Do not fall
+ // back to the tenant-wide sender: that could route WCDA mail through another
+ // platform's identity or a personal mailbox.
+ const from=value("WCDA_GRAPH_MAIL_FROM").toLowerCase();
+ if(from!=="wcda.events@govapps.wcsports.co.za")
+   throw new EmsError(503,"Configure WCDA_GRAPH_MAIL_FROM with the approved WCDA.Events shared mailbox.");
  return from;
+}
+function emailHtml(body:string){
+ const safe=body.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+ return '<!doctype html><html><body style="margin:0;padding:24px;background:#f2f5fa;font-family:Arial,Helvetica,sans-serif;color:#263d5b;">'+
+  '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #dce5f1;border-radius:12px;overflow:hidden;">'+
+  '<tr><td style="padding:24px 28px;background:#001484;color:#ffffff;">'+
+  '<table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="width:54px;height:54px;border:1px solid #ffffff99;border-radius:10px;text-align:center;vertical-align:middle;font-size:13px;font-weight:800;letter-spacing:-.5px;">WCDA</td>'+
+  '<td style="padding-left:14px;"><div style="font-size:17px;font-weight:800;letter-spacing:1.4px;">WCDA EVENTS</div><div style="padding-top:5px;font-size:9px;letter-spacing:1.2px;color:#dbe6ff;">WESTERN CAPE DEVELOPMENT AUTHORITY</div></td></tr></table></td></tr>'+
+  '<tr><td style="padding:30px 32px;font-size:14px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;">'+safe+'</td></tr>'+
+  '<tr><td style="padding:18px 28px;background:#f1f5fb;border-top:1px solid #e1e9f3;color:#617795;font-size:10px;line-height:1.7;">'+
+  '<strong style="color:#001484;letter-spacing:1px;">UNITED IN SERVICE · CONNECTED IN ACTION</strong><br>WCDA Events · Western Cape Sports Association NPC<br>'+
+  '<a href="mailto:WCDA.Events@govapps.wcsports.co.za" style="color:#001484;text-decoration:none;">WCDA.Events@govapps.wcsports.co.za</a><br>'+
+  '<span style="color:#8798ad;">This message relates to an official WCDA Events case. Please quote your event reference in replies.</span></td></tr></table></body></html>';
 }
 export async function sendCaseMail(args:{recipient:string;subject:string;body:string}):Promise<void>{
  if(!mailConfigured())throw new EmsError(503,"Graph email delivery is disabled until administration completes configuration.");
@@ -55,7 +71,7 @@ export async function sendCaseMail(args:{recipient:string;subject:string;body:st
   method:"POST",headers:{Authorization:"Bearer "+access,"Content-Type":"application/json"},
   body:JSON.stringify({message:{
     subject:args.subject,
-    body:{contentType:"Text",content:args.body},
+    body:{contentType:"HTML",content:emailHtml(args.body)},
     toRecipients:[{emailAddress:{address:args.recipient}}],
   },saveToSentItems:true}),
   cache:"no-store",redirect:"error",signal:AbortSignal.timeout(20000),
