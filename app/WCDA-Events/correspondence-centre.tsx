@@ -13,7 +13,7 @@ const types=[
  {value:"payment_notice",label:"Finance correspondence"},
  {value:"general",label:"General event correspondence"},
 ];
-const title=(s:string)=>s.replaceAll("_"," ").replace(/\\b\\w/g,c=>c.toUpperCase());
+const title=(s:string)=>s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase());
 const templates=[
  {id:"billing",kind:"payment_notice",icon:"🧾",tone:"blue",name:"Billing & invoice",tag:"FINANCE",desc:"Issue an invoice with a clear amount, due date and payment reference.",subject:"Your WCDA Events invoice · {{reference}}"},
  {id:"approval",kind:"status_update",icon:"🎉",tone:"green",name:"Event approval",tag:"DECISION",desc:"Celebrate an approved event and clearly communicate its conditions.",subject:"Your event has been approved · {{reference}}"},
@@ -50,7 +50,8 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  const[subject,setSubject]=useState("");
  const[body,setBody]=useState("");
  const[expanded,setExpanded]=useState<string|null>(null);
- const[filter,setFilter]=useState("");\n const[selectedTemplate,setSelectedTemplate]=useState<string>("");
+ const[filter,setFilter]=useState("");
+ const[selectedTemplate,setSelectedTemplate]=useState<string>("");
  const eventFor=(id:string)=>events.find(e=>e.id===id);
  const visible=useMemo(()=>records.filter(r=>!filter||r.event_id===filter),[records,filter]);
  async function refresh(){
