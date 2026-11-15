@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import GovAppsServiceRibbon from "./govapps-service-ribbon";
 import "./globals.css";
 
 const govAppsIconUrl = "/govapps-favicon.png?v=20261017";
@@ -15,8 +16,6 @@ export const metadata: Metadata = {
     shortcut: [{ url: govAppsIconUrl, type: "image/png" }],
     apple: [{ url: govAppsIconUrl, type: "image/png" }],
   },
-  // Inherit noindex across operational, account and sign-in routes.
-  // Public pages opt in explicitly at page level; access control is enforced separately.
   robots: { index: false, follow: false, nocache: true },
 };
 
@@ -27,7 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-ZA">
-      <body>{children}</body>
+      <body>
+        <GovAppsServiceRibbon />
+        {children}
+      </body>
     </html>
   );
 }
