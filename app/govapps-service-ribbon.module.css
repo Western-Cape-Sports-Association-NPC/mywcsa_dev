@@ -1,0 +1,86 @@
+.ribbon {
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  overflow: hidden;
+  background: #a71930;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.2);
+  box-shadow: 0 3px 12px rgba(36, 0, 8, .18);
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+}
+.label {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: #790f23;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .9px;
+  white-space: nowrap;
+}
+.label svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.link {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+}
+.track {
+  display: flex;
+  width: max-content;
+  flex: 0 0 auto;
+  align-items: center;
+  animation: govapps-alert-marquee 38s linear infinite;
+}
+.track span {
+  display: block;
+  padding: 0 42px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .25px;
+  line-height: 42px;
+  white-space: nowrap;
+}
+.ribbon:hover .track,
+.ribbon:focus-within .track {
+  animation-play-state: paused;
+}
+.link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+@keyframes govapps-alert-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (max-width: 600px) {
+  .ribbon { min-height: 40px; }
+  .label { gap: 6px; padding: 0 10px; font-size: 9px; letter-spacing: .4px; }
+  .label svg { width: 15px; height: 15px; }
+  .track span { padding: 0 26px; font-size: 10px; line-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; }
+  .track span:nth-child(2) { display: none; }
+  .link { overflow-x: auto; }
+}
