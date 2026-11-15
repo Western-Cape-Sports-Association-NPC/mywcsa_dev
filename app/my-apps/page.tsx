@@ -14,7 +14,7 @@ const fallbackApps: LauncherItem[] = [
   { slug: "csd", title: "MyWCSA CSD", description: "Suppliers, procurement and asset administration.", href: "/apps/csd", category: "Administration", icon: "briefcase", status: "preview", featured: false, sort_order: 6 },
   { slug: "persal", title: "MyWCSA PERSAL", description: "Restricted personnel administration and employee records.", href: "/persal", category: "People", icon: "shield", status: "restricted", featured: false, sort_order: 7 },
   { slug: "control", title: "MyWCSA Command Centre", description: "ServiceDesk, e-Innovation, BiT and ICT control, allocation and account request management. Authorised staff only.", href: "/control", category: "Administration", icon: "shield", status: "available", featured: false, sort_order: 9 },
-  { slug: "msuite", title: "MyWCSA MSuite", description: "Open Microsoft 365 apps and productivity services.", href: "https://m365.cloud.microsoft/apps", category: "Services", icon: "layers", status: "available", featured: false, sort_order: 8 },
+  { slug: "msuite", title: "MyWCSA MSuite", description: "Open Microsoft 365 apps and productivity services.", href: "/apps/msuite", category: "Services", icon: "layers", status: "restricted", featured: false, sort_order: 8 },
   { slug: "cams", title: "MyWCSA CAMS", description: "Centralised administration for WCSA organisations, staff, schools, learners, players, documents and assets. Staff authorisation required.", href: "/cams", category: "Administration", icon: "shield", status: "preview", featured: true, sort_order: 10 },
 ];
 
