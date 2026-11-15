@@ -21,7 +21,7 @@ const microsoftServiceNotice = {
   "This notice concerns payslip issuing and distribution. It does not, by itself, announce a change to salary payment arrangements. Please direct payroll-specific queries to the appropriate Finance or HR contact.",
   "WHAT STAFF SHOULD DO: Please be patient, avoid repeatedly attempting to access unavailable Microsoft services, and check GovApps for further updates. Do not send passwords or confidential payroll information through unofficial channels.",
   "The recent global Microsoft 365 incident has been reported as restored by Microsoft. WCSA is monitoring its own access and connected services; no confirmed restoration time for the WCSA environment is being announced in this notice."
- ].join("\\n\\n")
+ ].join("\n\n")
 };
 
 export default async function StaffNoticeBoard(){
