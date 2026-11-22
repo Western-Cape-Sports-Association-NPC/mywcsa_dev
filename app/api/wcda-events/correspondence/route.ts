@@ -52,9 +52,9 @@ export async function POST(request:Request){
   if(name==="prepare"){
    const kind=body.kind,subject=body.subject,text=body.body;
    const recipient=typeof body.recipient==="string"?body.recipient.trim().toLowerCase():"";
-   const parseList=(v:unknown)=>typeof v==="string"?v.split(/[;,\\n]+/).map(x=>x.trim().toLowerCase()).filter(Boolean):[];
+   const parseList=(v:unknown)=>typeof v==="string"?v.split(/[;,\n]+/).map(x=>x.trim().toLowerCase()).filter(Boolean):[];
    const cc=parseList(body.cc),bcc=parseList(body.bcc);
-   const valid=(v:string)=>/^[^\\s@,;]+@[^\\s@,;]+\\.[^\\s@,;]+$/.test(v);
+   const valid=(v:string)=>/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(v);
    if(!valid(recipient)||cc.length>20||bcc.length>20||[...cc,...bcc].some(x=>!valid(x))||new Set([recipient,...cc,...bcc]).size!==1+cc.length+bcc.length)
       throw new EmsError(400,"Enter valid, unique To, CC and BCC email addresses (maximum 20 in each copy field).");
    if(!["status_update","documents_requested","general","payment_notice"].includes(String(kind))||
