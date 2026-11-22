@@ -107,13 +107,15 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p className={styles.success} role="status">{notice}</p>}
   {canCompose&&<form className={styles.card} onSubmit={submit}>
-   <div className={styles.composeHero}><div className={styles.brandMark}>WCDA<span>EVENTS</span></div><div><span className={styles.overline}>OFFICIAL COMMUNICATIONS STUDIO</span><h3>Make every message count.</h3><p>Choose a ready-made design, personalise the details and send it through the approved review process.</p></div><span className={styles.draftPill}>✦ DRAFT STUDIO</span></div>\n   <label className={styles.templateCase}>1 · SELECT THE EVENT CASE *
+   <div className={styles.composeHero}><div className={styles.brandMark}>WCDA<span>EVENTS</span></div><div><span className={styles.overline}>OFFICIAL COMMUNICATIONS STUDIO</span><h3>Make every message count.</h3><p>Choose a ready-made design, personalise the details and send it through the approved review process.</p></div><span className={styles.draftPill}>✦ DRAFT STUDIO</span></div>
+   <label className={styles.templateCase}>1 · SELECT THE EVENT CASE *
     <select value={eventId} required onChange={e=>{const id=e.target.value;setEventId(id);const ev=events.find(x=>x.id===id) as (EmsEvent & {applicant_contact_email?:string;organiser_email?:string})|undefined;setRecipient(ev?.applicant_contact_email||ev?.organiser_email||"");setSelectedTemplate("");}}>
      <option value="">Choose an event to load its details…</option>
      {events.map(e=><option key={e.id} value={e.id}>{e.reference} · {e.name}</option>)}
     </select>
    </label>
-   <div className={styles.cardTitle}><h3>2 · Choose an email template</h3><span>4 branded templates</span></div>\n   <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
+   <div className={styles.cardTitle}><h3>2 · Choose an email template</h3><span>4 branded templates</span></div>
+   <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
    <p className={styles.small}>Choose the event first so the template can load the correct reference and organiser details. You can edit the To, CC and BCC recipients. Another authorised manager must approve before dispatch.</p>
    <div className={styles.form}>
    <div className={styles.form}>
