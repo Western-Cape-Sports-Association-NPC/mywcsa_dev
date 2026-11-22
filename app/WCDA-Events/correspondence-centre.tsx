@@ -93,7 +93,7 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  function submit(e:FormEvent<HTMLFormElement>){
   e.preventDefault();
   if(!eventId||subject.trim().length<8||body.trim().length<15)return;
-  void update({action:"prepare",eventId,kind,subject,body});
+  void update({action:"prepare",eventId,kind,subject,body,recipient,cc,bcc});
  }
  return <section className={styles.root}>
   <header className={styles.header}>
