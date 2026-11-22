@@ -61,7 +61,7 @@ export async function POST(request:Request){
       typeof subject!=="string"||subject.trim().length<8||subject.length>160||
       typeof text!=="string"||text.trim().length<15||text.length>5000)
       throw new EmsError(400,"Provide a message category, subject and complete body.");
-   const record=await action("prepare",actor,eventId,null,{kind,subject,text,body:text,recipient,cc,bcc});
+   const record=await action("prepare",actor,eventId,null,{kind,subject,text,body:text,recipient,cc:cc.join(","),bcc:bcc.join(",")});
    return Response.json({message:record},{status:201,headers});
   }
   if(name!=="approve"&&name!=="dispatch")throw new EmsError(400,"Unsupported correspondence action.");
