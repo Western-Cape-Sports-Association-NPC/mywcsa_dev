@@ -118,7 +118,6 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
    <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
    <p className={styles.small}>Choose the event first so the template can load the correct reference and organiser details. You can edit the To, CC and BCC recipients. Another authorised manager must approve before dispatch.</p>
    <div className={styles.form}>
-   <div className={styles.form}>
     <label className={styles.wide}>To · Primary recipient *
      <input type="email" required value={recipient} onChange={e=>setRecipient(e.target.value)} placeholder="applicant@example.org"/>
     </label>
