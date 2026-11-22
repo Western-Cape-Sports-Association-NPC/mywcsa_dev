@@ -52,6 +52,9 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  const[expanded,setExpanded]=useState<string|null>(null);
  const[filter,setFilter]=useState("");
  const[selectedTemplate,setSelectedTemplate]=useState<string>("");
+ const[recipient,setRecipient]=useState("");
+ const[cc,setCc]=useState("");
+ const[bcc,setBcc]=useState("");
  const eventFor=(id:string)=>events.find(e=>e.id===id);
  const visible=useMemo(()=>records.filter(r=>!filter||r.event_id===filter),[records,filter]);
  async function refresh(){
@@ -74,7 +77,7 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
    });
    const result=await r.json() as {message?:CaseMessage;acceptedByMicrosoft?:boolean;error?:string};
    if(!r.ok||!result.message)throw new Error(result.error||"Unable to update case correspondence.");
-   if(payload.action==="prepare"){setEventId("");setKind("general");setSubject("");setBody("");}
+   if(payload.action==="prepare"){setKind("general");setSubject("");setBody("");setSelectedTemplate("");}
    setNotice(payload.action==="prepare"?"Draft saved for independent management review.":
     payload.action==="approve"?"Message approved. An authorised manager can now dispatch it through Microsoft Graph.":
     "Microsoft Graph accepted the message for processing. Delivery to the recipient is not yet confirmed.");
@@ -104,14 +107,20 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p className={styles.success} role="status">{notice}</p>}
   {canCompose&&<form className={styles.card} onSubmit={submit}>
-   <div className={styles.composeHero}><div className={styles.brandMark}>WCDA<span>EVENTS</span></div><div><span className={styles.overline}>OFFICIAL COMMUNICATIONS STUDIO</span><h3>Make every message count.</h3><p>Choose a ready-made design, personalise the details and send it through the approved review process.</p></div><span className={styles.draftPill}>✦ DRAFT STUDIO</span></div>\n   <div className={styles.cardTitle}><h3>Choose an email template</h3><span>4 branded templates</span></div>\n   <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
-   <p className={styles.small}>The recipient comes from the registered event applicant, not from an address typed into this form. Another authorised manager must approve before dispatch. Templates include a WCDA Events text masthead and branded signature in the outgoing email.</p>
+   <div className={styles.composeHero}><div className={styles.brandMark}>WCDA<span>EVENTS</span></div><div><span className={styles.overline}>OFFICIAL COMMUNICATIONS STUDIO</span><h3>Make every message count.</h3><p>Choose a ready-made design, personalise the details and send it through the approved review process.</p></div><span className={styles.draftPill}>✦ DRAFT STUDIO</span></div>\n   <label className={styles.templateCase}>1 · SELECT THE EVENT CASE *
+    <select value={eventId} required onChange={e=>{const id=e.target.value;setEventId(id);const ev=events.find(x=>x.id===id) as (EmsEvent & {applicant_contact_email?:string;organiser_email?:string})|undefined;setRecipient(ev?.applicant_contact_email||ev?.organiser_email||"");setSelectedTemplate("");}}>
+     <option value="">Choose an event to load its details…</option>
+     {events.map(e=><option key={e.id} value={e.id}>{e.reference} · {e.name}</option>)}
+    </select>
+   </label>
+   <div className={styles.cardTitle}><h3>2 · Choose an email template</h3><span>4 branded templates</span></div>\n   <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
+   <p className={styles.small}>Choose the event first so the template can load the correct reference and organiser details. You can edit the To, CC and BCC recipients. Another authorised manager must approve before dispatch.</p>
    <div className={styles.form}>
     <label>Message category *<select value={kind} onChange={e=>setKind(e.target.value)}>{types.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}</select></label>
     <label className={styles.wide}>Subject *<input minLength={8} maxLength={160} required value={subject} onChange={e=>setSubject(e.target.value)} placeholder="Event reference and purpose of correspondence"/></label>
     <label className={styles.wide}>Official message text *<textarea minLength={15} maxLength={5000} required rows={7} value={body} onChange={e=>setBody(e.target.value)} placeholder="Write the specific notification or document request. Do not claim that an event has received approval unless confirmed by an authorised decision."/></label>
    </div>
-   <footer className={styles.formFooter}><span>Messages are saved to the EMS case record and audited.</span><button type="submit" disabled={busy||!eventId||subject.trim().length<8||body.trim().length<15}>{busy?"Saving…":"Save draft for review"}</button></footer>
+   <footer className={styles.formFooter}><span>Messages are saved to the EMS case record and audited.</span><button type="submit" disabled={busy||!eventId||!recipient.trim()||subject.trim().length<8||body.trim().length<15}>{busy?"Saving…":"Save draft for review"}</button></footer>
   </form>}
   <section className={styles.card}>
    <div className={styles.cardTitle}>
