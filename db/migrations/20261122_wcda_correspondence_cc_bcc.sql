@@ -34,14 +34,14 @@ begin
     or length(btrim(coalesce(p_payload->>'body',''))) not between 15 and 5000 then
       raise exception 'Complete the message kind, subject and body' using errcode='22023'; end if;
    v_recipient:=lower(btrim(coalesce(nullif(p_payload->>'recipient',''),nullif(btrim(v_event.applicant_contact_email),''),v_event.organiser_email,'')));
-   if v_recipient !~ '^[^ @,;]+@[^ @,;]+\\.[^ @,;]+$' then
+   if v_recipient !~ '^[^ @,;]+@[^ @,;]+\.[^ @,;]+$' then
       raise exception 'Enter a valid To recipient email address' using errcode='22023'; end if;
    select coalesce(array_agg(lower(btrim(x))),array[]::text[]) into v_cc
      from unnest(regexp_split_to_array(coalesce(p_payload->>'cc',''), '[,;[:space:]]+')) x where btrim(x)<>'';
    select coalesce(array_agg(lower(btrim(x))),array[]::text[]) into v_bcc
      from unnest(regexp_split_to_array(coalesce(p_payload->>'bcc',''), '[,;[:space:]]+')) x where btrim(x)<>'';
    if cardinality(v_cc)>20 or cardinality(v_bcc)>20
-     or exists(select 1 from unnest(v_cc||v_bcc) x where x !~ '^[^ @,;]+@[^ @,;]+\\.[^ @,;]+$')
+     or exists(select 1 from unnest(v_cc||v_bcc) x where x !~ '^[^ @,;]+@[^ @,;]+\.[^ @,;]+$')
      or (v_recipient=any(v_cc)) or (v_recipient=any(v_bcc))
      or exists(select 1 from unnest(v_cc) x group by x having count(*)>1)
      or exists(select 1 from unnest(v_bcc) x group by x having count(*)>1)
