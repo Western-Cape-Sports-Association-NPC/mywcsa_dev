@@ -4,7 +4,7 @@ export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"private, no-store"};
 type Message={
- id:string;event_id:string;kind:string;recipient_email:string;subject:string;body:string;
+ id:string;event_id:string;kind:string;recipient_email:string;cc_emails:string[];bcc_emails:string[];subject:string;body:string;
  status:"draft"|"approved"|"dispatching"|"accepted"|"uncertain";
  prepared_by_email:string;approved_by_email:string|null;created_at:string;accepted_at:string|null;
 };
@@ -19,7 +19,7 @@ async function rows(ids:string[],organiser:boolean){
  if(!ids.length)return [] as Message[];
  const eventFilter="event_id=in.("+ids.filter(uuid).join(",")+")";
  const statusFilter=organiser?"&status=eq.accepted":"";
- return emsDatabase<Message[]>("wcda_ems_correspondence?select=id,event_id,kind,recipient_email,subject,body,status,prepared_by_email,approved_by_email,created_at,accepted_at&"+
+ return emsDatabase<Message[]>("wcda_ems_correspondence?select=id,event_id,kind,recipient_email,cc_emails,bcc_emails,subject,body,status,prepared_by_email,approved_by_email,created_at,accepted_at&"+
    eventFilter+statusFilter+"&order=created_at.desc&limit=150");
 }
 async function action(name:string,actor:{id:string;email:string},eventId:string,messageId:string|null,payload:Record<string,unknown>={}){
@@ -51,11 +51,17 @@ export async function POST(request:Request){
   const name=body.action;
   if(name==="prepare"){
    const kind=body.kind,subject=body.subject,text=body.body;
+   const recipient=typeof body.recipient==="string"?body.recipient.trim().toLowerCase():"";
+   const parseList=(v:unknown)=>typeof v==="string"?v.split(/[;,\n]+/).map(x=>x.trim().toLowerCase()).filter(Boolean):[];
+   const cc=parseList(body.cc),bcc=parseList(body.bcc);
+   const valid=(v:string)=>/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(v);
+   if(!valid(recipient)||cc.length>20||bcc.length>20||[...cc,...bcc].some(x=>!valid(x))||new Set([recipient,...cc,...bcc]).size!==1+cc.length+bcc.length)
+      throw new EmsError(400,"Enter valid, unique To, CC and BCC email addresses (maximum 20 in each copy field).");
    if(!["status_update","documents_requested","general","payment_notice"].includes(String(kind))||
       typeof subject!=="string"||subject.trim().length<8||subject.length>160||
       typeof text!=="string"||text.trim().length<15||text.length>5000)
       throw new EmsError(400,"Provide a message category, subject and complete body.");
-   const record=await action("prepare",actor,eventId,null,{kind,subject,text,body:text});
+   const record=await action("prepare",actor,eventId,null,{kind,subject,text,body:text,recipient,cc:cc.join(","),bcc:bcc.join(",")});
    return Response.json({message:record},{status:201,headers});
   }
   if(name!=="approve"&&name!=="dispatch")throw new EmsError(400,"Unsupported correspondence action.");
@@ -74,7 +80,7 @@ export async function POST(request:Request){
   // Claim before the external effect, so repeated clicks / requests cannot send duplicate emails.
   const claimed=await action("claim",actor,eventId,msg.id);
   try{
-    await sendCaseMail({recipient:claimed.recipient_email,subject:claimed.subject,body:claimed.body});
+    await sendCaseMail({recipient:claimed.recipient_email,cc:claimed.cc_emails||[],bcc:claimed.bcc_emails||[],subject:claimed.subject,body:claimed.body});
   }catch(e){
     // A timeout can leave an unknown outcome: no automatic retries or false delivery claims.
     await action("finish",actor,eventId,msg.id,{status:"uncertain"}).catch(()=>null);

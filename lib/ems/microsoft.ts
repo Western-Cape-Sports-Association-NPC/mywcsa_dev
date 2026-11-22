@@ -62,7 +62,7 @@ function emailHtml(body:string){
   '<a href="mailto:WCDA.Events@govapps.wcsports.co.za" style="color:#001484;text-decoration:none;">WCDA.Events@govapps.wcsports.co.za</a><br>'+
   '<span style="color:#8798ad;">This message relates to an official WCDA Events case. Please quote your event reference in replies.</span></td></tr></table></body></html>';
 }
-export async function sendCaseMail(args:{recipient:string;subject:string;body:string}):Promise<void>{
+export async function sendCaseMail(args:{recipient:string;cc?:string[];bcc?:string[];subject:string;body:string}):Promise<void>{
  if(!mailConfigured())throw new EmsError(503,"Graph email delivery is disabled until administration completes configuration.");
  const from=mailbox();
  const access=await token(graphSettings());
@@ -73,6 +73,8 @@ export async function sendCaseMail(args:{recipient:string;subject:string;body:st
     subject:args.subject,
     body:{contentType:"HTML",content:emailHtml(args.body)},
     toRecipients:[{emailAddress:{address:args.recipient}}],
+    ...(args.cc?.length?{ccRecipients:args.cc.map(address=>({emailAddress:{address}}))}:{}),
+    ...(args.bcc?.length?{bccRecipients:args.bcc.map(address=>({emailAddress:{address}}))}:{}) ,
   },saveToSentItems:true}),
   cache:"no-store",redirect:"error",signal:AbortSignal.timeout(20000),
  });}catch{throw new EmsError(503,"Microsoft mail delivery outcome is uncertain. Do not send again until an administrator checks Sent Items.");}
