@@ -123,6 +123,7 @@ export default function MsuiteIncidentCentre() {
           </div><div className={styles.wizardFoot}>CINT · BiT · ICT · COMMUNICATIONS <span>{step+1} / {steps.length}</span></div>
         </section>
       </div>}
+      </div>
     </main>
   );
 }
