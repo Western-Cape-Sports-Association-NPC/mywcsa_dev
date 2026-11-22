@@ -116,6 +116,17 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
    <div className={styles.cardTitle}><h3>2 · Choose an email template</h3><span>4 branded templates</span></div>\n   <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
    <p className={styles.small}>Choose the event first so the template can load the correct reference and organiser details. You can edit the To, CC and BCC recipients. Another authorised manager must approve before dispatch.</p>
    <div className={styles.form}>
+   <div className={styles.form}>
+    <label className={styles.wide}>To · Primary recipient *
+     <input type="email" required value={recipient} onChange={e=>setRecipient(e.target.value)} placeholder="applicant@example.org"/>
+    </label>
+    <label>CC · Copy recipients
+     <input type="text" value={cc} onChange={e=>setCc(e.target.value)} placeholder="person1@example.org, person2@example.org"/>
+    </label>
+    <label>BCC · Blind-copy recipients
+     <input type="text" value={bcc} onChange={e=>setBcc(e.target.value)} placeholder="records@example.org"/>
+    </label>
+    <p className={styles.small+" "+styles.wide}>Separate multiple CC or BCC addresses with commas or semicolons. BCC recipients are hidden from other recipients.</p>
     <label>Message category *<select value={kind} onChange={e=>setKind(e.target.value)}>{types.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}</select></label>
     <label className={styles.wide}>Subject *<input minLength={8} maxLength={160} required value={subject} onChange={e=>setSubject(e.target.value)} placeholder="Event reference and purpose of correspondence"/></label>
     <label className={styles.wide}>Official message text *<textarea minLength={15} maxLength={5000} required rows={7} value={body} onChange={e=>setBody(e.target.value)} placeholder="Write the specific notification or document request. Do not claim that an event has received approval unless confirmed by an authorised decision."/></label>
