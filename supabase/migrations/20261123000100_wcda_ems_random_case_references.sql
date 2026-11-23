@@ -53,7 +53,7 @@ begin
     or length(trim(coalesce(p_category,''))) not between 2 and 100
     or length(trim(coalesce(p_venue_name,''))) not between 2 and 200
     or p_start_date is null or p_end_date is null or p_end_date<p_start_date
-    or (p_estimated_attendance is not null and p_estimated_attendance<0
+    or (p_estimated_attendance is not null and p_estimated_attendance<0)
   then raise exception 'Invalid WCDA EMS event application' using errcode='22023';
   end if;
   v_number:=public.wcda_ems_random_case_number(v_year);
