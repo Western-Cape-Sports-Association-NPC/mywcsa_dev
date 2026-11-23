@@ -37,7 +37,7 @@ The initial route, dashboard, application intake endpoint and database migration
 11. Keep production deployment status **INCOMPLETE** until exact URL and target environment tests pass.
 
 ## Reference policy
-`EMS YY/NNNNN` (example `EMS 26/00231`); atomic annual allocation using South African local-year boundaries. Historical certificate `PMJ327109` and finance `ESC327109` are not EMS master references and must be preserved separately after verification.
+`EMS YY/NNNNN` (example `EMS 26/58321`); random five-digit annual allocation using South African local-year boundaries, with transaction-level locking and unique constraints. Existing references remain unchanged. Historical certificate `PMJ327109` and finance `ESC327109` are not EMS master references and must be preserved separately after verification.
 
 ## Correspondence policy
 Incoming Microsoft 365 replies will require message ID/thread ID plus case matching and authorisation checks. No mailbox has been connected by this branch; do not claim email sent or received.
