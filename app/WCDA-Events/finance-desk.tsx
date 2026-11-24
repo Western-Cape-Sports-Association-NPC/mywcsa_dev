@@ -84,8 +84,8 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
   for(const key of Object.keys(labels) as Array<keyof typeof labels>){
    const item=items[key];if(!item.on)continue;
    const value=money(item.amount);if(value<100){setError("Enter at least R1.00 for every selected charge.");return;}
-   const detail=key==="penalty"?" — "+item.code+" "+item.reason.trim():"";
-   if(key==="penalty"&&item.reason.trim().length<5){setError("Add the specific penalty reason and code.");return;}
+   const detail=key==="penalty"?" — "+items.penalty.code+" "+items.penalty.reason.trim():"";
+   if(key==="penalty"&&items.penalty.reason.trim().length<5){setError("Add the specific penalty reason and code.");return;}
    lines.push(labels[key]+detail+" | "+rand(value));
   }
   const discount=items.discount.on?money(items.discount.amount):0;
