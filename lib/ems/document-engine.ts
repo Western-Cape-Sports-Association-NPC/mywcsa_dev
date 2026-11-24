@@ -31,28 +31,28 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  pdf.setFont("helvetica","bold");pdf.text("Date",135,52);pdf.text("Invoice Number",135,62);pdf.text("Due Date",135,72);
  pdf.setFont("helvetica","normal");pdf.text(date(invoice.created_at),right,52,{align:"right"});pdf.text(invoice.reference,right,62,{align:"right"});pdf.text(date(dueDate.toISOString()),right,72,{align:"right"});
  y=92;
- if(isPenaltyInvoice){
-  pdf.setFillColor(0,20,132);pdf.rect(left,y,width,10,"F");
-  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(10);
-  pdf.text("PENALTIES CATALOGUE",left+3,y+6.8);
-  y+=15;
-  pdf.setTextColor(35,52,79);pdf.setFont("helvetica","bold");pdf.setFontSize(9);
-  pdf.text("REASONS FOR PENALIZATION",left,y);
-  y+=5;
-  pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);
-  for(const line of pdf.splitTextToSize(description,width) as string[]){pdf.text(line,left,y);y+=4.5;}
-  y+=5;
- }
  pdf.setFillColor(0,20,132);pdf.rect(left,y,width,11,"F");
  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(8);
  const cols=[left+2,left+32,left+119,left+139,left+155,right-2];
  ["Date","Description","Quantity","Unit Price","VAT","Amount (ZAR)"].forEach((v,i)=>pdf.text(v,cols[i],y+7,{align:i===0||i===1?"left":"right"}));
- y+=11;pdf.setTextColor(35,52,79);pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);
- pdf.text(date(invoice.created_at),cols[0],y+8);
+ y+=11;
  const wrapped=pdf.splitTextToSize(description,82) as string[];
- wrapped.slice(0,4).forEach((line,i)=>pdf.text(line,cols[1],y+8+i*4.5));
- pdf.text("1",cols[2],y+8,{align:"right"});pdf.text(zar(total),cols[3],y+8,{align:"right"});pdf.text(zar(0),cols[4],y+8,{align:"right"});pdf.text(zar(total),cols[5],y+8,{align:"right"});
- y+=Math.max(19,wrapped.slice(0,4).length*4.5+12);
+ const displayLines=wrapped.slice(0,isPenaltyInvoice?5:4);
+ const rowTop=y;
+ const rowHeight=isPenaltyInvoice?Math.max(24,displayLines.length*4.5+19):Math.max(19,displayLines.length*4.5+12);
+ pdf.setDrawColor(207,217,232);pdf.rect(left,rowTop,width,rowHeight);
+ pdf.setTextColor(35,52,79);pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);
+ pdf.text(date(invoice.created_at),cols[0],rowTop+8);
+ if(isPenaltyInvoice){
+  pdf.setFont("helvetica","bold");pdf.setFontSize(8.5);
+  pdf.text("PENALTIES CATALOGUE",cols[1],rowTop+7);
+  pdf.setFont("helvetica","normal");pdf.setFontSize(8);
+  displayLines.forEach((line,i)=>pdf.text(line,cols[1],rowTop+13+i*4.2));
+ } else {
+  displayLines.forEach((line,i)=>pdf.text(line,cols[1],rowTop+8+i*4.5));
+ }
+ pdf.text("1",cols[2],rowTop+8,{align:"right"});pdf.text(zar(total),cols[3],rowTop+8,{align:"right"});pdf.text(zar(0),cols[4],rowTop+8,{align:"right"});pdf.text(zar(total),cols[5],rowTop+8,{align:"right"});
+ y=rowTop+rowHeight+8;
  pdf.setDrawColor(207,217,232);pdf.line(left,y,right,y);y+=10;
  const totals=[["Subtotal",zar(total)],["Total VAT",zar(0)],["Total Inc VAT",zar(total)]];
  totals.forEach(([label,value],i)=>{pdf.setFont("helvetica",i===2?"bold":"normal");pdf.setFontSize(i===2?11:9.5);pdf.text(label,140,y);pdf.text(value,right,y,{align:"right"});y+=7;});
@@ -214,7 +214,7 @@ export function exportWcdaApprovalLetterPdf(event:EmsEvent,reference:string){
    pdf.setDrawColor(205,216,232);pdf.rect(left,y,width,h);
    for(let i=1;i<cols.length-1;i++)pdf.line(cols[i],y,cols[i],y+h);
    vals.forEach((v,i)=>{
-    pdf.setTextColor(i===0?navy:ink);pdf.setFont("helvetica",i===0?"bold":"normal");pdf.setFontSize(6.8);
+    pdf.setTextColor(i===0?navy[0]:ink[0],i===0?navy[1]:ink[1],i===0?navy[2]:ink[2]);pdf.setFont("helvetica",i===0?"bold":"normal");pdf.setFontSize(6.8);
     wrapped[i].forEach((line,j)=>pdf.text(line,cols[i]+1.2,y+4+j*3.25));
    });
    y+=h;
