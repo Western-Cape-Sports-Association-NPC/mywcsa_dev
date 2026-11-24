@@ -122,7 +122,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
    <div className={styles.formGrid}>
     <label>Registered event<select required value={eventId} onChange={e=>setEventId(e.target.value)}><option value="">Select an unbilled event</option>{unbilled.map(e=><option key={e.id} value={e.id}>{e.reference} · {e.name}</option>)}</select></label>
     <label>Amount in ZAR<input required inputMode="decimal" pattern="[0-9]+(\.[0-9]{1,2})?" placeholder="e.g. 350.00" value={amount} onChange={e=>setAmount(e.target.value)}/></label>
-    <label className={styles.wide}>Charge description / approved fee basis<input required minLength={8} maxLength={500} placeholder="Description and basis of the applicable event fee" value={description} onChange={e=>setDescription(e.target.value)}/></label>
+    <label className={styles.wide}>Invoice description / reasons for penalization or approved fee basis<input required minLength={8} maxLength={500} placeholder="PENALTIES CATALOGUE — P-05: Failure to implement safety controls; event safety controls were not implemented after written notice." value={description} onChange={e=>setDescription(e.target.value)}/></label>
    </div>
    <div className={styles.formFoot}><small>A different manager or executive must approve the prepared invoice. No payment is taken at this step.</small><button type="submit" disabled={busy||!eventId||description.trim().length<8}>{busy?"Saving…":"Prepare invoice"}</button></div>
   </form>}
