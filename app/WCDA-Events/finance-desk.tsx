@@ -24,7 +24,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  const[amount,setAmount]=useState("");
  const[description,setDescription]=useState("");
  const[items,setItems]=useState({eventFee:{on:true,amount:""},penalty:{on:false,amount:"",code:"P-05",reason:""},adminFee:{on:false,amount:""},inspection:{on:false,amount:""},lateFee:{on:false,amount:""},discount:{on:false,amount:""}});
- const selectedTotal=useMemo(()=>{const cents=(v:string)=>/^\\d+(\\.\\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0;const gross=Object.entries(items).filter(([k,v])=>k!=="discount"&&v.on).reduce((n,[,v])=>n+cents(v.amount),0);return Math.max(0,gross-(items.discount.on?cents(items.discount.amount):0));},[items]);
+ const selectedTotal=useMemo(()=>{const cents=(v:string)=>/^\d+(\.\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0;const gross=Object.entries(items).filter(([k,v])=>k!=="discount"&&v.on).reduce((n,[,v])=>n+cents(v.amount),0);return Math.max(0,gross-(items.discount.on?cents(items.discount.amount):0));},[items]);
  const[reason,setReason]=useState("");
  const[activeInvoice,setActiveInvoice]=useState("");
  const[selectedInvoices,setSelectedInvoices]=useState<string[]>([]);
@@ -78,7 +78,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  }
  function prepare(e:FormEvent){
   e.preventDefault();
-  const money=(v:string)=>/^\\d+(\\.\\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0;
+  const money=(v:string)=>/^\d+(\.\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0;
   const labels={eventFee:"Event fee",penalty:"Penalty / compliance charge",adminFee:"Administration fee",inspection:"Inspection / assessment fee",lateFee:"Late application fee"} as const;
   const lines:string[]=[];
   for(const key of Object.keys(labels) as Array<keyof typeof items>){
@@ -94,8 +94,8 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
   const gross=(Object.keys(labels) as Array<keyof typeof items>).reduce((n,k)=>n+(items[k].on?money(items[k].amount):0),0);
   const total=gross-discount;
   if(total<100||total>100000000){setError("Select charges and ensure the final total is between R1.00 and R1,000,000.00.");return;}
-  const note=description.trim()? "\\nNote: "+description.trim():"";
-  const detail="ITEMISED INVOICE\\n"+lines.join("\\n")+"\\nTOTAL DUE | "+rand(total)+note;
+  const note=description.trim()? "\nNote: "+description.trim():"";
+  const detail="ITEMISED INVOICE\n"+lines.join("\n")+"\nTOTAL DUE | "+rand(total)+note;
   if(detail.length>500){setError("Shorten the additional note or penalty reason so the invoice description fits.");return;}
   void execute({action:"prepare",eventId,amountCents:total,description:detail});
  }
