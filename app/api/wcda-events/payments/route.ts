@@ -34,7 +34,7 @@ export async function GET(){
 export async function POST(request:Request){
  try{
   const origin=request.headers.get("origin");
-  if(!origin||origin!==new URL(request.url).origin)throw new EmsError(403,"Open MyWCDA Events on its authorised address.");
+  if(!origin||origin!==new URL(request.url).origin)throw new EmsError(403,"Open MyEventDesk on its authorised address.");
   const raw=await request.text();
   if(raw.length>5000)throw new EmsError(413,"Payment request is too large.");
   let body:Record<string,unknown>;
