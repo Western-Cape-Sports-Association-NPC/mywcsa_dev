@@ -176,7 +176,34 @@ export function exportWcdaApprovalLetterPdf(event:EmsEvent,reference:string){
   vl.forEach((line,i)=>pdf.text(line,left+labelW+2,y+4.5+i*4));
   y+=h;
  };
+
  const rows=(items:[string,string][])=>items.forEach(([a,b])=>row(a,b));
+ const penaltyTable=(items:{code:string;breach:string;level:string;administrativeAction:string;organiserDuty:string}[])=>{
+  const cols=[left,left+12,left+72,left+91,left+137,right];
+  const headers=["REF","BREACH / NON-COMPLIANCE","LEVEL","WCDA ADMINISTRATIVE RESPONSE","REQUIRED CORRECTIVE ACTION"];
+  const drawHeader=()=>{
+   const h=13;pdf.setFillColor(...navy);pdf.rect(left,y,width,h,"F");
+   pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(6.4);
+   headers.forEach((v,i)=>pdf.text(pdf.splitTextToSize(v,cols[i+1]-cols[i]-2) as string[],cols[i]+1,y+4));
+   y+=h;
+  };
+  drawHeader();
+  items.forEach((item,index)=>{
+   const vals=[item.code,item.breach,item.level,item.administrativeAction,item.organiserDuty];
+   pdf.setFont("helvetica","normal");pdf.setFontSize(6.8);
+   const wrapped=vals.map((v,i)=>pdf.splitTextToSize(v,cols[i+1]-cols[i]-3) as string[]);
+   const h=Math.max(15,...wrapped.map(v=>v.length*3.25+5));
+   if(y+h>269){newPage();drawHeader();}
+   pdf.setFillColor(index%2===0?247:239,index%2===0?249:244,index%2===0?252:249);pdf.rect(left,y,width,h,"F");
+   pdf.setDrawColor(205,216,232);pdf.rect(left,y,width,h);
+   for(let i=1;i<cols.length-1;i++)pdf.line(cols[i],y,cols[i],y+h);
+   vals.forEach((v,i)=>{
+    pdf.setTextColor(i===0?navy:ink);pdf.setFont("helvetica",i===0?"bold":"normal");pdf.setFontSize(6.8);
+    wrapped[i].forEach((line,j)=>pdf.text(line,cols[i]+1.2,y+4+j*3.25));
+   });
+   y+=h;
+  });
+ };
  header();y=61;
  row("To",""+event.organiser_name+" — Event Organiser");
  row("Subject",approved?"Formal approval and endorsement of event application":rejected?"Formal notification of unsuccessful event application":"Official notification of application status");
@@ -206,13 +233,36 @@ export function exportWcdaApprovalLetterPdf(event:EmsEvent,reference:string){
   ["Recorded decision-maker",event.decision_by_email||"Not recorded"],
   ["Decision reasons / basis",event.decision_reason||"No decision rationale recorded in the EMS register."]
  ]);
- y+=3;section("03","Extent and application of decision");
+ y+=3;section("03","Penalties, breaches and enforcement schedule");
+ row("Application of schedule",approved
+  ? "The following schedule forms part of the administrative conditions attached to this WCDA endorsement. It records the response WCDA may take in relation to non-compliance with this letter or the event arrangements assessed in the EMS case. Any response must be proportionate, procedurally fair, supported by the case record and exercised only within WCDA's lawful authority."
+  : "The following is an administrative compliance schedule for the application record. It does not constitute an approval, create a statutory offence or authorise WCDA to impose a fine.");
+ penaltyTable([
+  {code:"P-01",breach:"Failure to submit required event documents, plans, proof of insurance or supporting records by the stated deadline.",level:"LEVEL 1 — MINOR",administrativeAction:"Written compliance notice; application or endorsement processing may be held until the missing information is received.",organiserDuty:"Submit complete and accurate documents within the written correction period."},
+  {code:"P-02",breach:"Failure to display, communicate or brief staff and contractors on approved event conditions and operational requirements.",level:"LEVEL 1 — MINOR",administrativeAction:"Written warning and direction to rectify; further verification may be required before event commencement.",organiserDuty:"Brief all relevant personnel and provide evidence of corrective action."},
+  {code:"P-03",breach:"Failure to maintain required records, emergency contacts, incident logs or a designated responsible event representative.",level:"LEVEL 2 — MODERATE",administrativeAction:"Formal corrective-action notice; additional monitoring or a compliance inspection may be required where lawful.",organiserDuty:"Appoint a responsible representative and restore the required records and communication arrangements."},
+  {code:"P-04",breach:"Material change to the event date, venue, capacity, programme, layout, risk profile or operating arrangements without prior written notification and reassessment where required.",level:"LEVEL 2 — MODERATE",administrativeAction:"Written notice requiring reassessment; the affected part of the endorsement may be suspended or treated as not covering the changed arrangements.",organiserDuty:"Stop reliance on the changed arrangements until written reassessment or confirmation is received."},
+  {code:"P-05",breach:"Failure to implement an approved safety, crowd-management, access-control, medical, evacuation or emergency-response measure.",level:"LEVEL 3 — SERIOUS",administrativeAction:"Immediate corrective direction; suspension of the affected activity or recommendation that the event be paused, subject to WCDA's lawful role and any competent authority's directions.",organiserDuty:"Implement the required control immediately and provide verifiable evidence before resumption."},
+  {code:"P-06",breach:"Exceeding the recorded or lawfully authorised attendance capacity, obstructing emergency routes, or allowing unsafe crowd density.",level:"LEVEL 3 — SERIOUS",administrativeAction:"Require immediate capacity control and corrective action; notify or refer the matter to the venue operator and competent authority where appropriate.",organiserDuty:"Stop admissions, reduce occupancy and restore safe access and egress arrangements."},
+  {code:"P-07",breach:"Proceeding without a permit, licence, clearance, consent or approval required from a municipality, venue owner or other competent authority.",level:"LEVEL 3 — SERIOUS",administrativeAction:"WCDA endorsement does not cure the omission; endorsement may be suspended or withdrawn within lawful authority and the matter may be referred to the responsible authority.",organiserDuty:"Do not commence or continue the affected activity until the required authorisation is obtained and verified."},
+  {code:"P-08",breach:"Failure to report a serious incident, emergency, material safety failure, significant injury or other reportable occurrence promptly.",level:"LEVEL 3 — SERIOUS",administrativeAction:"Formal investigation or compliance review; suspension or withdrawal may be considered where justified, with referral to the competent authority where required.",organiserDuty:"Notify emergency services and competent authorities as required, preserve records and submit a factual incident report."},
+  {code:"P-09",breach:"Serious safeguarding failure, harassment, abuse, discrimination, violence, or failure to protect children or other vulnerable persons.",level:"LEVEL 4 — CRITICAL",administrativeAction:"Immediate protective action; affected activity may be stopped and endorsement may be suspended or withdrawn within lawful authority; refer to the appropriate statutory or law-enforcement body.",organiserDuty:"Protect affected persons, activate safeguarding procedures and report to the competent authorities as required."},
+  {code:"P-10",breach:"Wilful provision of materially false, misleading, forged or concealed information in the application or compliance evidence.",level:"LEVEL 4 — CRITICAL",administrativeAction:"Reassessment, suspension or withdrawal of endorsement where lawfully justified; referral for investigation to the competent authority where appropriate.",organiserDuty:"Provide a full written explanation and corrected, verifiable information; preserve relevant records."},
+  {code:"P-11",breach:"Repeated failure to comply with a written corrective notice or deliberate obstruction of a lawful inspection or verification process.",level:"LEVEL 3 / 4 — SERIOUS TO CRITICAL",administrativeAction:"Escalated compliance review; endorsement may be suspended or withdrawn within lawful authority and relevant facts may be referred to the competent authority.",organiserDuty:"Comply with the notice by its deadline and cooperate with lawful verification."},
+  {code:"P-12",breach:"Unauthorised use of WCDA's name, logo, letter or endorsement to imply approval of activities, dates, venues or arrangements not covered by the decision.",level:"LEVEL 2 — MODERATE",administrativeAction:"Written demand to correct or cease the representation; endorsement may be withdrawn where misuse materially undermines the decision; further referral where appropriate.",organiserDuty:"Remove or correct the misleading material and issue clarification to affected parties."}
+ ]);
+ y+=3;section("04","Extent and application of decision");
+ row("WCDA determination",approved
+  ? "WCDA endorsement is granted solely in respect of the event, applicant, venue and event period identified in Section 01, as assessed and recorded in the EMS case. The endorsement does not extend to materially amended event arrangements."
+  : rejected
+   ? "No WCDA endorsement is granted in respect of this application. The applicant may not represent the event as approved or endorsed by WCDA."
+   : "No approval or endorsement has been granted. The applicant must await a further written decision issued by an authorised WCDA official.");
  row("WCDA determination",approved
   ?"WCDA endorsement is granted solely in respect of the event, applicant, venue and event period identified in Section 01, as assessed and recorded in the EMS case. The endorsement does not extend to materially amended event arrangements."
   :rejected
    ?"No WCDA endorsement is granted in respect of this application. The applicant may not represent the event as approved or endorsed by WCDA."
    :"No approval or endorsement has been granted. The applicant must await a further written decision issued by an authorised WCDA official.");
- y+=3;section("04","Conditions and obligations imposed on the organiser");
+ y+=3;section("05","Conditions and obligations imposed on the organiser");
  const conditions=[
   ["01","Statutory permissions","Obtain all permits, licences, consents and permissions required from the municipality, venue owner and every other competent authority."],
   ["02","Event safety","Prepare, implement and maintain an event-specific safety and emergency plan, including crowd management, access control, medical response and evacuation arrangements, as applicable."],
@@ -222,15 +272,15 @@ export function exportWcdaApprovalLetterPdf(event:EmsEvent,reference:string){
   ["06","Changes and incidents","Notify WCDA without delay of any material change to the event, incident, postponement or cancellation."]
  ];
  conditions.forEach(([no,topic,detail])=>row(no+"  "+topic,detail));
- y+=3;section("05","Statutory status and limitation");
+ y+=3;section("06","Statutory status and limitation");
  row("Legal effect","WCDA endorsement is an administrative endorsement only. It is not a municipal event permit, land-use consent, venue booking, liquor licence, road-closure approval, fire clearance, safety certificate or any other statutory authorisation. The organiser remains responsible for obtaining all separate approvals from the competent authorities before the event takes place.");
- y+=3;section("06","Official correspondence and verification");
+ y+=3;section("07","Official correspondence and verification");
  rows([
   ["Enquiries","All correspondence must quote EMS case reference "+reference+"."],
   ["Document status",issued?"Issued subject to the recorded decision and authorised sign-off.":"Generated draft only — not approved for dispatch or reliance."],
   ["Verification","The recipient should verify the authenticity of this correspondence with WCDA using the EMS case reference."]
  ]);
- y+=5;section("07","Authorisation and issue control");
+ y+=5;section("08","Authorisation and issue control");
  rows([
   ["Authorised signatory","[Full name and official designation]"],
   ["Delegated authority","[Applicable delegation / authority reference]"],
