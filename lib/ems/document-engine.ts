@@ -15,11 +15,11 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  const created=new Date(invoice.created_at);
  const dueDate=new Date(created);dueDate.setDate(dueDate.getDate()+14);
  const organiser=safe(event?.organiser_name||"Event organiser");
- const rawDescription=safe(invoice.description);
- const penaltyMarker=/^PENALTIES CATALOGUE\s*[—:-]?\s*/i;
- const isPenaltyInvoice=penaltyMarker.test(rawDescription);
- const penaltyReasons=isPenaltyInvoice?rawDescription.replace(penaltyMarker,"").trim():rawDescription;
- const description=penaltyReasons||"Reasons for penalization to be confirmed in the invoice record.";
+ const rawDescription=String(invoice.description||"").slice(0,500);
+ const isItemised=rawDescription.startsWith("ITEMISED INVOICE");
+ const isPenaltyInvoice=/^PENALTIES CATALOGUE\\s*[—:-]?\\s*/i.test(rawDescription);
+ const itemLines=isItemised?rawDescription.split("\\n").slice(1).filter(line=>line&&!line.startsWith("TOTAL DUE")):[];
+ const description=rawDescription.replace(/^ITEMISED INVOICE\\n/,"").replace(/^PENALTIES CATALOGUE\\s*[—:-]?\\s*/i,"");
  const address=["7 Bree Street","Touchstone House","Cape Town","8001"].join("\n");
  pdf.setFillColor(0,20,132);pdf.rect(0,0,210,40,"F");
  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(18);pdf.text("WESTERN CAPE SPORTS ASSOCIATION NPC",left,16);
@@ -36,22 +36,26 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  const cols=[left+2,left+32,left+119,left+139,left+155,right-2];
  ["Date","Description","Quantity","Unit Price","VAT","Amount (ZAR)"].forEach((v,i)=>pdf.text(v,cols[i],y+7,{align:i===0||i===1?"left":"right"}));
  y+=11;
- const wrapped=pdf.splitTextToSize(description,82) as string[];
- const displayLines=wrapped.slice(0,isPenaltyInvoice?5:4);
+ const rows=itemLines.length?itemLines.map(line=>{
+  const parts=line.split(" | ");return {label:parts.slice(0,-1).join(" | ")||line,amount:parts.at(-1)||""};
+ }):[{label:description,amount:zar(total)}];
  const rowTop=y;
- const rowHeight=isPenaltyInvoice?Math.max(24,displayLines.length*4.5+19):Math.max(19,displayLines.length*4.5+12);
+ const rowHeight=Math.max(19,rows.length*8+6);
  pdf.setDrawColor(207,217,232);pdf.rect(left,rowTop,width,rowHeight);
  pdf.setTextColor(35,52,79);pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);
  pdf.text(date(invoice.created_at),cols[0],rowTop+8);
- if(isPenaltyInvoice){
-  pdf.setFont("helvetica","bold");pdf.setFontSize(8.5);
-  pdf.text("PENALTIES CATALOGUE",cols[1],rowTop+7);
-  pdf.setFont("helvetica","normal");pdf.setFontSize(8);
-  displayLines.forEach((line,i)=>pdf.text(line,cols[1],rowTop+13+i*4.2));
- } else {
-  displayLines.forEach((line,i)=>pdf.text(line,cols[1],rowTop+8+i*4.5));
- }
- pdf.text("1",cols[2],rowTop+8,{align:"right"});pdf.text(zar(total),cols[3],rowTop+8,{align:"right"});pdf.text(zar(0),cols[4],rowTop+8,{align:"right"});pdf.text(zar(total),cols[5],rowTop+8,{align:"right"});
+ let lineY=rowTop+7;
+ rows.forEach((row,index)=>{
+  pdf.setFont("helvetica",row.label.toLowerCase().includes("discount")?"italic":"normal");pdf.setFontSize(8);
+  const labelLines=pdf.splitTextToSize(row.label,82) as string[];
+  labelLines.slice(0,2).forEach((line,j)=>pdf.text(line,cols[1],lineY+j*3.5));
+  pdf.text("1",cols[2],lineY,{align:"right"});
+  pdf.text(row.amount,cols[5],lineY,{align:"right"});
+  lineY+=Math.max(7,labelLines.length*3.5+2);
+ });
+ pdf.setFont("helvetica","normal");pdf.setFontSize(8);
+ pdf.text(zar(0),cols[4],rowTop+8,{align:"right"});
+ pdf.text(zar(total),cols[3],rowTop+8,{align:"right"});
  y=rowTop+rowHeight+8;
  pdf.setDrawColor(207,217,232);pdf.line(left,y,right,y);y+=10;
  const totals=[["Subtotal",zar(total)],["Total VAT",zar(0)],["Total Inc VAT",zar(total)]];
