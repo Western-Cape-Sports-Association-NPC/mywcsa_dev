@@ -93,11 +93,11 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
 
   return <div className={styles.shell}>
     <header className={styles.topbar}>
-      <div className={styles.topBrand}><img src="/mywcsa-logo.png" alt="MyWCSA GovApps"/><span><strong>MyWCDA Events</strong><small>Events | Safety | Progress</small></span></div>
-      <div className={styles.headerSearch}><WorkHubIcon name="search" size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} aria-label="Search EMS pages and events" placeholder="Search MyWCDA Events..."/>
+      <div className={styles.topBrand}><img src="/mywcsa-logo.png" alt="MyWCSA GovApps"/><span><strong>{actor.mode==="staff"?"WCDA Events":"MyEventDesk"}</strong><small>{actor.mode==="staff"?"STAFF · EVENTS · SAFETY":"ORGANISER · PARTNER · EVENTS"}</small></span></div>
+      <div className={styles.headerSearch}><WorkHubIcon name="search" size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} aria-label="Search EMS pages and events" placeholder={actor.mode==="staff"?"Search WCDA Events...":"Search MyEventDesk..."}/>
         {matches.length>0&&<div className={styles.searchResults}>{matches.map(x=><button type="button" key={x} onClick={()=>{setTab(x);setQuery("");setShowForm(false);setSimpleMode(false);}}><WorkHubIcon name={iconFor(x)} size={17}/>{x}</button>)}</div>}
       </div>
-      <div className={styles.topActions}><Link href={actor.mode==="staff"?"/my-apps":"/"} className={styles.backLink}>My Apps <WorkHubIcon name="external" size={13}/></Link><span className={styles.avatar}>{actor.name.slice(0,1).toUpperCase()}</span><span className={styles.accountName}>{actor.name}<small>{actor.mode==="staff"?"Employee":"Organiser"}</small></span></div>
+      <div className={styles.topActions}>{actor.mode==="organiser"&&<Link href="/eventdesk/organisation" className={styles.backLink}>Organisation profile</Link>}<Link href={actor.mode==="staff"?"/my-apps":"/"} className={styles.backLink}>{actor.mode==="staff"?"My Apps":"GovApps home"} <WorkHubIcon name="external" size={13}/></Link><span className={styles.avatar}>{actor.name.slice(0,1).toUpperCase()}</span><span className={styles.accountName}>{actor.name}<small>{actor.mode==="staff"?"Employee":"Organiser"}</small></span></div>
     </header>
     <div className={`${styles.appBody} ${collapsed?styles.layoutCollapsed:""}`}>
       <aside className={styles.sidebar} style={{position:pinned?"sticky":"relative",top:pinned?10:undefined}}>
@@ -111,7 +111,7 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
         {!collapsed&&<div className={styles.sidebarBottom}><strong>WCDA</strong><small>Western Cape Development Authority</small><p>Events & Safety Department</p></div>}
       </aside>
       <main className={styles.main}>
-        {tab!=="Dashboard"&&<div className={styles.titleRow}><div><span className={styles.eyebrow}>MYWCDA EVENTS · OFFICIAL GOVAPPS WORKSPACE</span><h1>{tab}</h1><p>{sectionHint(tab)}</p></div>{canCreate&&registryTabs.includes(tab)&&<button type="button" className={styles.primaryButton} onClick={()=>{if(actor.mode==="staff"){setTab("Capture in Office");setShowForm(false);}else setShowForm(v=>!v);}}>{actor.mode==="staff"?"Capture office application":showForm?"Close form":"New event +"}</button>}</div>}
+        {tab!=="Dashboard"&&<div className={styles.titleRow}><div><span className={styles.eyebrow}>{actor.mode==="staff"?"WCDA EVENTS · INTERNAL STAFF WORKSPACE":"MYEVENTDESK · EXTERNAL ORGANISER WORKSPACE"}</span><h1>{tab}</h1><p>{sectionHint(tab)}</p></div>{canCreate&&registryTabs.includes(tab)&&<button type="button" className={styles.primaryButton} onClick={()=>{if(actor.mode==="staff"){setTab("Capture in Office");setShowForm(false);}else setShowForm(v=>!v);}}>{actor.mode==="staff"?"Capture office application":showForm?"Close form":"New event +"}</button>}</div>}
         {notice&&<div className={styles.notice} role="status">{notice}</div>}
         {tab==="Dashboard"&&<>
           <section className={styles.hero}><div className={styles.heroOverlay}><span className={styles.heroKicker}>WELCOME BACK</span><h1>{actor.name} <span aria-hidden="true">👋</span></h1><p>Your digital workspace for events, community safety and progress.</p>{canCreate&&<button type="button" className={styles.heroButton} onClick={()=>{if(actor.mode==="staff"){setTab("Capture in Office");setShowForm(false);}else setShowForm(true);}}>{actor.mode==="staff"?"Capture an office application":"New event application"} <WorkHubIcon name="arrow" size={16}/></button>}</div><div className={styles.heroQuote}>Events.<br/>Safety.<br/>Progress.</div></section>
