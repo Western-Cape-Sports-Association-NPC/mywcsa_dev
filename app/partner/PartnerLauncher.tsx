@@ -32,7 +32,7 @@ export default function PartnerLauncher({username,email,wcsaId,initialStatus}:{u
     <section style={panel}><div style={{fontSize:27,color:"#1b5aaf"}}>▦</div><h3>MyWCDA Events</h3>
      <p style={{fontSize:12,lineHeight:1.8,color:"#657e9e"}}>Event approvals and organiser services require an individual approved application allocation.</p>
      <p style={{fontSize:11,color:"#366197",fontWeight:700}}>Allocation status: {status.replace(/_/g," ")}</p>
-     {status==="approved"?<Link href="/WCDA-Events" style={{display:"inline-flex",padding:"11px 15px",borderRadius:10,background:"#001484",color:"white",fontSize:12,fontWeight:700,textDecoration:"none"}}>Open approved WCDA Events →</Link>:
+     {status==="approved"?<Link href="/WCDA-Events/portal" style={{display:"inline-flex",padding:"11px 15px",borderRadius:10,background:"#001484",color:"white",fontSize:12,fontWeight:700,textDecoration:"none"}}>Open approved WCDA Events →</Link>:
       <button onClick={request} disabled={busy||status==="pending"} style={{border:0,borderRadius:10,padding:"11px 15px",background:"#001484",color:"white",cursor:"pointer",fontSize:12,fontWeight:700,opacity:busy||status==="pending"?.6:1}}>{busy?"Submitting…":status==="pending"?"Awaiting approval":"Request WCDA Events access →"}</button>}
     </section>
    </div>
