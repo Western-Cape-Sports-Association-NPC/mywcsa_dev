@@ -49,5 +49,4 @@ const primary:CSSProperties={display:"inline-flex",justifyContent:"center",align
 const secondary:CSSProperties={border:"1px solid #cad8ec",borderRadius:11,padding:"11px 14px",background:"#fff",color:"#001484",fontSize:11,fontWeight:750,cursor:"pointer"};
 const quiet:CSSProperties={fontSize:11,color:"#001484",fontWeight:700};
 const error:CSSProperties={padding:12,background:"#fff0f1",color:"#9c2b3d",borderRadius:10,fontSize:12};
-const footer:CSSProperties={display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:10,color:"#7b8ca5",padding:"18px 3px"};
 function tab(active:boolean):CSSProperties{return {padding:"10px 13px",borderRadius:10,textDecoration:"none",fontSize:11,fontWeight:750,background:active?"#001484":"#f1f5fb",color:active?"#fff":"#36577f"}}
