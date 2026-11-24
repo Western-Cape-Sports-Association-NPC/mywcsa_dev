@@ -4,6 +4,7 @@ import type {EmsActor,EmsEvent} from "@/lib/ems/types";
 import type {EmsInvoice,EmsReceipt} from "@/lib/ems/payments";
 import styles from "./finance-desk.module.css";
 import {exportWcdaInvoice} from "@/lib/ems/document-engine";
+import PenaltiesCatalogue from "./penalties-catalogue";
 
 const rand=(cents:number)=>new Intl.NumberFormat("en-ZA",{style:"currency",currency:"ZAR"}).format(cents/100);
 const label=(s:string)=>s.replaceAll("_"," ").replace(/\b[a-z]/g,c=>c.toUpperCase());
@@ -112,6 +113,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  }
  return <section className={styles.root}>
   <div className={styles.heading}><div><span className={styles.overline}>MYWCDA EVENTS · SECURE FINANCIAL SERVICES</span><h2>{isStaff?"Event billing & payment control":"Your invoices & payments"}</h2><p>{isStaff?"Manage approved official event charges, independent finance approvals and verified Paystack settlements.":"Review approved event charges and pay safely through Paystack. Charges cannot be changed in your browser."}</p></div><button type="button" onClick={()=>void refresh()} disabled={loading||busy}>↻ Refresh</button></div>
+  <PenaltiesCatalogue mode={isStaff?"system":"paywall"}/>
   {error&&<p className={styles.alert} role="alert">{error}</p>}
   {message&&<p className={styles.success} role="status">{message}</p>}
   {mayPrepare&&<form className={styles.card+" "+styles.prepare} onSubmit={prepare}>
