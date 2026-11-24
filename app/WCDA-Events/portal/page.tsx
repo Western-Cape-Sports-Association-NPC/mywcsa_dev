@@ -4,7 +4,7 @@ import {AuthError} from "next-auth";
 import {auth,signIn,signOut} from "@/auth";
 import {redirect} from "next/navigation";
 import {getEmsActor} from "@/lib/ems/server";
-import EmsWorkspace from "../workspace";
+import OrganiserHub from "./organiser-hub";
 
 export const dynamic="force-dynamic";
 export const metadata={title:"MyWCDA Events | Organiser Portal",description:"Secure event organiser and business partner portal."};
@@ -18,7 +18,7 @@ export default async function OrganiserPortal({searchParams}:{searchParams:Promi
    return <main style={shell}><section style={panel}><Brand/><h1>This portal is for external organisers and business partners</h1><p>Your current GovApps session is not an external or business-partner account. Switch accounts to continue.</p><form action={async()=>{"use server";await signOut({redirectTo:"/WCDA-Events/portal"});}}><button style={primary}>Switch account</button></form></section></main>;
   }
   const actor=await getEmsActor();
-  if(actor?.mode==="organiser")return <EmsWorkspace actor={actor}/>;
+  if(actor?.mode==="organiser")return <OrganiserHub name={actor.name} email={actor.email}/>;
   const partner=provider==="business-partner";
   return <main style={shell}><section style={panel}><Brand/><span style={eyebrow}>ACCOUNT CREATED · ACCESS CONTROL</span><h1>Your account is ready.</h1><p>{partner?"Your organisation must request WCDA Events access through its Business Partner workspace.":"Your WCDA Events access request must be approved before event records and applications are available."}</p><div style={statusBox}><strong>Access status</strong><span>Awaiting WCDA authorisation</span><small>Your GovApps account remains the same account used for the wider GovApps platform. Staff capture and personnel tools are not available in this portal.</small></div><Link href={partner?"/partner":"/external"} style={primary}>Continue to your GovApps account →</Link><form action={async()=>{"use server";await signOut({redirectTo:"/WCDA-Events/portal"});}}><button style={secondary}>Sign out</button></form></section></main>;
  }
