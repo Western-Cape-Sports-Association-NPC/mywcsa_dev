@@ -1,0 +1,55 @@
+import Link from "next/link";
+import {AuthError} from "next-auth";
+import {auth,signIn,signOut} from "@/auth";
+import {redirect} from "next/navigation";
+import {getEmsActor} from "@/lib/ems/server";
+import type {CSSProperties} from "react";
+import EmsWorkspace from "@/app/WCDA-Events/workspace";
+
+export const dynamic="force-dynamic";
+export const metadata={title:"MyEventDesk | External Event Services",description:"Secure event application and organiser services for approved business partners and external organisers.",robots:{index:false,follow:false}};
+type Query={error?:string;type?:string};
+
+export default async function MyEventDeskPage({searchParams}:{searchParams:Promise<Query>}){
+ const q=await searchParams;
+ const session=await auth();
+ const provider=(session?.user as ({authProvider?:string}|undefined))?.authProvider;
+ if(session?.user){
+  if(provider!=="external-user"&&provider!=="business-partner"){
+   return <main style={shell}><section style={card}><Brand/><span style={eyebrow}>EXTERNAL ACCESS ONLY</span><h1>This is the MyEventDesk partner portal.</h1><p>Your current session is not an external organiser or business-partner account. The internal WCDA Events staff workspace is a separate application.</p><form action={async()=>{"use server";await signOut({redirectTo:"/eventdesk"});}}><button style={primary}>Switch account</button></form><Link href="/" style={quiet}>Return to GovApps</Link></section></main>;
+  }
+  const actor=await getEmsActor();
+  if(actor?.mode==="organiser")return <EmsWorkspace actor={actor}/>;
+  return <main style={shell}><section style={card}><Brand/><span style={eyebrow}>ACCOUNT RECOGNISED · APP ACCESS REQUIRED</span><h1>Your account is not yet authorised.</h1><p>Your external account is valid, but MyEventDesk access has not been approved or activated. An authorised WCDA official must approve the MyEventDesk application allocation before event records and submission tools become available.</p><div style={status}><strong>Access status</strong><span>Awaiting authorisation</span><small>No staff workspace or internal administration permissions are granted through this portal.</small></div><a href="mailto:ServiceDesk@wcsports.co.za" style={primary}>Contact ServiceDesk</a><form action={async()=>{"use server";await signOut({redirectTo:"/eventdesk"});}}><button style={secondary}>Sign out</button></form></section></main>;
+ }
+ const organisation=q.type!=="individual";
+ const destination="/eventdesk";
+ async function partnerLogin(form:FormData){ "use server"; const identifier=String(form.get("identifier")||"").trim(),password=String(form.get("password")||""); if(!identifier||!password||identifier.length>254||password.length>256)redirect("/eventdesk?error=invalid&type=organisation"); try{await signIn("business-partner",{identifier,password,redirectTo:destination});}catch(error){if(error instanceof AuthError)redirect("/eventdesk?error=invalid&type=organisation");throw error;} }
+ async function organiserLogin(form:FormData){ "use server"; const identifier=String(form.get("identifier")||"").trim(),password=String(form.get("password")||""); if(!identifier||!password||identifier.length>254||password.length>256)redirect("/eventdesk?error=invalid&type=individual"); try{await signIn("external-user",{identifier,password,redirectTo:destination});}catch(error){if(error instanceof AuthError)redirect("/eventdesk?error=invalid&type=individual");throw error;} }
+ return <main style={shell}><div style={wrap}><header style={top}><Brand/><span style={secure}><i/> SECURE EXTERNAL ACCESS</span></header><section style={hero}><div><span style={heroKicker}>WESTERN CAPE · EVENT SERVICES</span><h1>Plan it. Submit it.<br/><em>Track it.</em></h1><p>One secure place for approved event organisers and business partners to submit applications, manage event information, provide compliance documents and follow decisions.</p><div style={pills}>{["Event applications","Safety & compliance","Documents & forms","Payments & invoices","Application tracking"].map(x=><span key={x}>{x}</span>)}</div></div><div style={visual}><b>MY</b><strong>EVENT<br/>DESK</strong><small>YOUR EVENTS. ONE WORKSPACE.</small></div></section><section style={login}><span style={eyebrow}>MYEVENTDESK ACCOUNT</span><h2>Sign in to your workspace</h2><p>Use the username and password issued to you by an authorised administrator.</p><div style={tabs}><Link href="/eventdesk?type=organisation" style={tab(organisation)}>Business partner</Link><Link href="/eventdesk?type=individual" style={tab(!organisation)}>Individual organiser</Link></div>{q.error&&<p role="alert" style={error}>Sign-in failed. Check your credentials and try again.</p>}{organisation?<form action={partnerLogin} style={formStyle}><label>Email, username or partner ID<input name="identifier" required autoComplete="username" placeholder="Your business partner ID or username"/></label><label>Password<input name="password" type="password" required autoComplete="current-password" placeholder="Your password"/></label><button style={primary}>Sign in to MyEventDesk →</button></form>:<form action={organiserLogin} style={formStyle}><label>Email or username<input name="identifier" required autoComplete="username" placeholder="Your issued username or email"/></label><label>Password<input name="password" type="password" required autoComplete="current-password" placeholder="Your password"/></label><button style={primary}>Sign in to MyEventDesk →</button></form>}<div style={provision}><strong>Need access?</strong><p>Accounts are created by authorised WCDA staff. There is no public self-registration. Contact the Events & Safety Department or ServiceDesk to request an account. Your credentials will be handed over privately.</p><a href="mailto:ServiceDesk@wcsports.co.za">Contact ServiceDesk</a></div><p style={security}>MyEventDesk is the external application. Internal staff capture, vetting administration, personnel records and staff-only controls remain in the separate WCDA Events workspace.</p></section><footer>© {new Date().getFullYear()} · Western Cape · MyWCSA GovApps · <Link href="/">GovApps home</Link></footer></div></main>;
+}
+function Brand(){return <Link href="/eventdesk" style={{display:"inline-flex",alignItems:"center",gap:10,textDecoration:"none",color:"#001484",fontWeight:850,fontSize:16}}><span style={{width:40,height:40,display:"grid",placeItems:"center",borderRadius:12,background:"#001484",color:"#fff",fontWeight:900}}>M</span><span>MyEventDesk<small style={{display:"block",fontSize:8,letterSpacing:1.2,color:"#6880a3"}}>EVENT ORGANISER & PARTNER PORTAL</small></span></Link>}
+const shell:CSSProperties={minHeight:"100svh",background:"linear-gradient(145deg,#edf3ff,#f8faff 55%,#e7efff)",padding:"clamp(14px,3vw,34px)",fontFamily:"Poppins,Arial,sans-serif",color:"#18345f"};
+const wrap:CSSProperties={maxWidth:1120,margin:"0 auto"};
+const top:CSSProperties={display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:22};
+const secure:CSSProperties={fontSize:9,fontWeight:800,letterSpacing:1.2,color:"#49678f"};
+const hero:CSSProperties={display:"grid",gridTemplateColumns:"minmax(0,1.5fr) minmax(210px,.7fr)",gap:25,alignItems:"center",padding:"clamp(24px,5vw,48px)",borderRadius:24,background:"linear-gradient(120deg,#00105f,#001484 68%,#2767b2)",color:"#fff",boxShadow:"0 18px 50px #00148425"};
+const heroKicker:CSSProperties={fontSize:10,letterSpacing:2,fontWeight:800,color:"#c8d9ff"};
+const heroTitle:CSSProperties={};
+const pills:CSSProperties={display:"flex",gap:8,flexWrap:"wrap",marginTop:22};
+const visual:CSSProperties={minHeight:220,borderRadius:20,padding:24,background:"linear-gradient(145deg,#ffffff24,#ffffff08)",border:"1px solid #ffffff35",display:"flex",flexDirection:"column",justifyContent:"center",color:"#fff"};
+const login:CSSProperties={maxWidth:700,margin:"22px auto",padding:"clamp(20px,4vw,34px)",border:"1px solid #dbe5f4",borderRadius:22,background:"#fff",boxShadow:"0 15px 45px #00148410"};
+const eyebrow:CSSProperties={fontSize:10,letterSpacing:1.6,fontWeight:800,color:"#6382ae"};
+const tabs:CSSProperties={display:"flex",gap:8,flexWrap:"wrap",margin:"18px 0"};
+const formStyle:CSSProperties={display:"grid",gap:13};
+const provision:CSSProperties={marginTop:20,padding:16,background:"#f3f6fc",borderRadius:13,fontSize:11,lineHeight:1.7};
+const security:CSSProperties={fontSize:10,color:"#7486a1",lineHeight:1.8,marginTop:18};
+const status:CSSProperties={display:"grid",gap:7,margin:"20px 0",padding:17,background:"#f3f6fc",borderRadius:12};
+const card:CSSProperties={maxWidth:620,margin:"9vh auto",padding:30,background:"#fff",border:"1px solid #dce6f5",borderRadius:22,boxShadow:"0 20px 60px #00148412",display:"grid",gap:16};
+const primary:CSSProperties={display:"inline-flex",justifyContent:"center",alignItems:"center",border:0,borderRadius:11,padding:"13px 17px",background:"#001484",color:"#fff",fontSize:12,fontWeight:750,textDecoration:"none",cursor:"pointer"};
+const secondary:CSSProperties={border:"1px solid #cad8ec",borderRadius:11,padding:"11px 14px",background:"#fff",color:"#001484",fontSize:11,fontWeight:750,cursor:"pointer"};
+const quiet:CSSProperties={fontSize:11,color:"#001484",fontWeight:700};
+const error:CSSProperties={padding:12,background:"#fff0f1",color:"#9c2b3d",borderRadius:10,fontSize:12};
+const formLabel:CSSProperties={};
+const footer:CSSProperties={display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:10,color:"#7b8ca5",padding:"18px 3px"};
+function tab(active:boolean):CSSProperties{return {padding:"10px 13px",borderRadius:10,textDecoration:"none",fontSize:11,fontWeight:750,background:active?"#001484":"#f1f5fb",color:active?"#fff":"#36577f"}}
