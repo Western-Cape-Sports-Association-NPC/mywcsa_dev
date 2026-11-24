@@ -58,7 +58,10 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  pdf.text(zar(total),cols[3],rowTop+8,{align:"right"});
  y=rowTop+rowHeight+8;
  pdf.setDrawColor(207,217,232);pdf.line(left,y,right,y);y+=10;
- const totals=[["Subtotal",zar(total)],["Total VAT",zar(0)],["Total Inc VAT",zar(total)]];
+ const parseMoney=(value:string)=>{const cleaned=value.replace(/[^0-9,.-]/g,"").replace(/\\./g,"").replace(",",".");const n=Number(cleaned);return Number.isFinite(n)?Math.round(n*100):0;};
+ const discountCents=rows.filter(row=>row.label.toLowerCase().includes("discount")).reduce((sum,row)=>sum+Math.abs(parseMoney(row.amount)),0);
+ const subtotalCents=rows.filter(row=>!row.label.toLowerCase().includes("discount")).reduce((sum,row)=>sum+Math.abs(parseMoney(row.amount)),0);
+ const totals=[["Subtotal",zar(isItemised?subtotalCents:total)],...(discountCents?[["Discount","-"+zar(discountCents)]]:[]),["Total VAT",zar(0)],["Total Inc VAT",zar(total)]];
  totals.forEach(([label,value],i)=>{pdf.setFont("helvetica",i===2?"bold":"normal");pdf.setFontSize(i===2?11:9.5);pdf.text(label,140,y);pdf.text(value,right,y,{align:"right"});y+=7;});
  y+=7;pdf.setDrawColor(207,217,232);pdf.line(left,y,right,y);y+=10;
  pdf.setFont("helvetica","bold");pdf.setFontSize(10);pdf.text("Amount Received",left,y);pdf.text(zar(paid),right,y,{align:"right"});
