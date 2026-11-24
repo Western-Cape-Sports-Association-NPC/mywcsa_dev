@@ -97,7 +97,7 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  }
  return <section className={styles.root}>
   <header className={styles.header}>
-   <div><span className={styles.overline}>MYWCDA EVENTS · MICROSOFT 365 CORRESPONDENCE</span>
+   <div><span className={styles.overline}>MYEVENTDESK · MICROSOFT 365 CORRESPONDENCE</span>
     <h2>{isStaff?"Official correspondence & cases":"Messages & notifications"}</h2>
     <p>{isStaff?"Write case-specific communications, obtain independent approval and use Microsoft Graph for authorised dispatch.":"Messages accepted for sending by WCDA appear here once the Microsoft service is enabled."}</p>
    </div>
