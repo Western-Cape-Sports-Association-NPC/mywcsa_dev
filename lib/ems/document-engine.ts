@@ -15,7 +15,11 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  const created=new Date(invoice.created_at);
  const dueDate=new Date(created);dueDate.setDate(dueDate.getDate()+14);
  const organiser=safe(event?.organiser_name||"Event organiser");
- const description=safe(invoice.description);
+ const rawDescription=safe(invoice.description);
+ const penaltyMarker=/^PENALTIES CATALOGUE\s*[—:-]?\s*/i;
+ const isPenaltyInvoice=penaltyMarker.test(rawDescription);
+ const penaltyReasons=isPenaltyInvoice?rawDescription.replace(penaltyMarker,"").trim():rawDescription;
+ const description=penaltyReasons||"Reasons for penalization to be confirmed in the invoice record.";
  const address=["7 Bree Street","Touchstone House","Cape Town","8001"].join("\n");
  pdf.setFillColor(0,20,132);pdf.rect(0,0,210,40,"F");
  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(18);pdf.text("WESTERN CAPE SPORTS ASSOCIATION NPC",left,16);
@@ -27,6 +31,18 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  pdf.setFont("helvetica","bold");pdf.text("Date",135,52);pdf.text("Invoice Number",135,62);pdf.text("Due Date",135,72);
  pdf.setFont("helvetica","normal");pdf.text(date(invoice.created_at),right,52,{align:"right"});pdf.text(invoice.reference,right,62,{align:"right"});pdf.text(date(dueDate.toISOString()),right,72,{align:"right"});
  y=92;
+ if(isPenaltyInvoice){
+  pdf.setFillColor(0,20,132);pdf.rect(left,y,width,10,"F");
+  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(10);
+  pdf.text("PENALTIES CATALOGUE",left+3,y+6.8);
+  y+=15;
+  pdf.setTextColor(35,52,79);pdf.setFont("helvetica","bold");pdf.setFontSize(9);
+  pdf.text("REASONS FOR PENALIZATION",left,y);
+  y+=5;
+  pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);
+  for(const line of pdf.splitTextToSize(description,width) as string[]){pdf.text(line,left,y);y+=4.5;}
+  y+=5;
+ }
  pdf.setFillColor(0,20,132);pdf.rect(left,y,width,11,"F");
  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(8);
  const cols=[left+2,left+32,left+119,left+139,left+155,right-2];
