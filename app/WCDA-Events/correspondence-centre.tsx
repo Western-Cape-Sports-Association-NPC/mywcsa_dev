@@ -39,6 +39,7 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  const isStaff=actor.mode==="staff";
  const canCompose=isStaff&&["registrar","manager","super_admin","executive","assessor","operations","compliance","finance","certificates"].includes(actor.role||"");
  const canApprove=isStaff&&["manager","super_admin","executive"].includes(actor.role||"");
+ const canRunMailTest=isStaff&&actor.role==="super_admin";
  const[records,setRecords]=useState<CaseMessage[]>([]);
  const[enabled,setEnabled]=useState(false);
  const[loading,setLoading]=useState(true);
@@ -55,6 +56,9 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  const[recipient,setRecipient]=useState("");
  const[cc,setCc]=useState("");
  const[bcc,setBcc]=useState("");
+ const[mailTestBusy,setMailTestBusy]=useState(false);
+ const[mailTestError,setMailTestError]=useState("");
+ const[mailTestAccepted,setMailTestAccepted]=useState<string[]>([]);
  const eventFor=(id:string)=>events.find(e=>e.id===id);
  const visible=useMemo(()=>records.filter(r=>!filter||r.event_id===filter),[records,filter]);
  async function refresh(){
@@ -68,6 +72,18 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
   finally{setLoading(false);}
  }
  useEffect(()=>{void refresh()},[]);
+ async function runMailTest(){
+  if(mailTestBusy)return;
+  setMailTestBusy(true);setMailTestError("");setMailTestAccepted([]);
+  try{
+   const r=await fetch("/api/wcda-events/mail-test",{method:"POST",cache:"no-store"});
+   const result=await r.json() as {acceptedByMicrosoft?:string[];error?:string};
+   if(!r.ok)throw new Error(result.error||"The WCDA Events test could not be completed.");
+   setMailTestAccepted(result.acceptedByMicrosoft||[]);
+  }catch(e){
+   setMailTestError(e instanceof Error?e.message:"The WCDA Events test could not be completed.");
+  }finally{setMailTestBusy(false);}
+ }
  async function update(payload:Record<string,unknown>){
   if(busy)return;
   setBusy(true);setError("");setNotice("");
@@ -93,7 +109,7 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
  function submit(e:FormEvent<HTMLFormElement>){
   e.preventDefault();
   if(!eventId||subject.trim().length<8||body.trim().length<15)return;
-  void update({action:"prepare",eventId,kind,subject,body});
+  void update({action:"prepare",eventId,kind,subject,body,recipient,cc,bcc});
  }
  return <section className={styles.root}>
   <header className={styles.header}>
@@ -103,6 +119,22 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
    </div>
    <button type="button" className={styles.refresh} onClick={()=>void refresh()} disabled={busy||loading}>↻ Refresh</button>
   </header>
+  {canRunMailTest&&<section className={styles.card} aria-labelledby="wcda-mail-test-title">
+   <div className={styles.cardTitle}>
+    <div><span className={styles.overline}>SYSTEM ADMINISTRATION · MICROSOFT GRAPH</span><h3 id="wcda-mail-test-title">Outbound email test</h3></div>
+    <span className={styles.status} data-status={enabled?"accepted":"draft"}>{enabled?"Mail service enabled":"Mail service disabled"}</span>
+   </div>
+   <p className={styles.small}>Send a controlled test from WCDA.Events@govapps.wcsports.co.za to the three approved test recipients. This does not create an event case or send an event notification.</p>
+   <ul className={styles.small}>
+    <li>thimna.proline@gmail.com</li>
+    <li>selinangalo2@gmail.com</li>
+    <li>ebranch@wcsports.co.za</li>
+   </ul>
+   {!enabled&&<div className={styles.warning}>Microsoft Graph mail is not enabled in this deployment. No test email can be sent until the server-side credentials and activation setting are configured.</div>}
+   {mailTestError&&<p className={styles.error} role="alert">{mailTestError}</p>}
+   {mailTestAccepted.length>0&&<div className={styles.success} role="status"><strong>Microsoft accepted the test message for:</strong><ul>{mailTestAccepted.map(address=><li key={address}>{address}</li>)}</ul><span>Acceptance is not confirmation of inbox delivery.</span></div>}
+   <div className={styles.entryActions}><button type="button" disabled={!enabled||mailTestBusy} onClick={()=>void runMailTest()}>{mailTestBusy?"Sending test…":"Send test email to all three recipients"}</button></div>
+  </section>}
   {isStaff&&!enabled&&<div className={styles.warning}><strong>Microsoft email integration awaiting activation.</strong> Drafts and independent approvals can be prepared, but no emails can be dispatched until a verified mailbox, Graph application permissions and the administrator enable the service.</div>}
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p className={styles.success} role="status">{notice}</p>}
@@ -117,7 +149,6 @@ export default function CorrespondenceCentre({actor,events}:{actor:EmsActor;even
    <div className={styles.cardTitle}><h3>2 · Choose an email template</h3><span>4 branded templates</span></div>
    <div className={styles.templateGrid}>{templates.map(t=><button type="button" key={t.id} className={styles.templateCard} data-tone={t.tone} data-selected={selectedTemplate===t.id} onClick={()=>applyTemplate(t.id)}><span className={styles.templateIcon}>{t.icon}</span><span className={styles.templateTag}>{t.tag}</span><strong>{t.name}</strong><small>{t.desc}</small><span className={styles.useTemplate}>Use this template <b>→</b></span></button>)}</div>
    <p className={styles.small}>Choose the event first so the template can load the correct reference and organiser details. You can edit the To, CC and BCC recipients. Another authorised manager must approve before dispatch.</p>
-   <div className={styles.form}>
    <div className={styles.form}>
     <label className={styles.wide}>To · Primary recipient *
      <input type="email" required value={recipient} onChange={e=>setRecipient(e.target.value)} placeholder="applicant@example.org"/>
