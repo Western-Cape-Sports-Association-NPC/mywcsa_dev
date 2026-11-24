@@ -100,7 +100,7 @@ export async function POST(request:Request){
             "Previous status: "+before.status.replaceAll("_"," "),
             "Current status: "+nextStatus.replaceAll("_"," "),
             "",
-            "Sign in to MyWCDA Events to review the current application record and any official correspondence.",
+            "Sign in to MyEventDesk to review the current application record and any official correspondence.",
             "",
             "WCDA Events · Events & Safety Department",
             "ServiceDesk@wcsports.co.za",
