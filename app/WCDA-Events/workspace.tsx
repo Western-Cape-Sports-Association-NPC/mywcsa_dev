@@ -93,8 +93,8 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
 
   return <div className={styles.shell}>
     <header className={styles.topbar}>
-      <div className={styles.topBrand}><img src="/mywcsa-logo.png" alt="MyWCSA GovApps"/><span><strong>MyWCDA Events</strong><small>Events | Safety | Progress</small></span></div>
-      <div className={styles.headerSearch}><WorkHubIcon name="search" size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} aria-label="Search EMS pages and events" placeholder="Search MyWCDA Events..."/>
+      <div className={styles.topBrand}><img src="/mywcsa-logo.png" alt="MyWCSA GovApps"/><span><strong>MyEventDesk</strong><small>Events | Safety | Progress</small></span></div>
+      <div className={styles.headerSearch}><WorkHubIcon name="search" size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} aria-label="Search EMS pages and events" placeholder="Search MyEventDesk..."/>
         {matches.length>0&&<div className={styles.searchResults}>{matches.map(x=><button type="button" key={x} onClick={()=>{setTab(x);setQuery("");setShowForm(false);setSimpleMode(false);}}><WorkHubIcon name={iconFor(x)} size={17}/>{x}</button>)}</div>}
       </div>
       <div className={styles.topActions}><Link href={actor.mode==="staff"?"/my-apps":"/"} className={styles.backLink}>My Apps <WorkHubIcon name="external" size={13}/></Link><span className={styles.avatar}>{actor.name.slice(0,1).toUpperCase()}</span><span className={styles.accountName}>{actor.name}<small>{actor.mode==="staff"?"Employee":"Organiser"}</small></span></div>
@@ -111,7 +111,7 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
         {!collapsed&&<div className={styles.sidebarBottom}><strong>WCDA</strong><small>Western Cape Development Authority</small><p>Events & Safety Department</p></div>}
       </aside>
       <main className={styles.main}>
-        {tab!=="Dashboard"&&<div className={styles.titleRow}><div><span className={styles.eyebrow}>MYWCDA EVENTS · OFFICIAL GOVAPPS WORKSPACE</span><h1>{tab}</h1><p>{sectionHint(tab)}</p></div>{canCreate&&registryTabs.includes(tab)&&<button type="button" className={styles.primaryButton} onClick={()=>{if(actor.mode==="staff"){setTab("Capture in Office");setShowForm(false);}else setShowForm(v=>!v);}}>{actor.mode==="staff"?"Capture office application":showForm?"Close form":"New event +"}</button>}</div>}
+        {tab!=="Dashboard"&&<div className={styles.titleRow}><div><span className={styles.eyebrow}>MYEVENTDESK · OFFICIAL GOVAPPS WORKSPACE</span><h1>{tab}</h1><p>{sectionHint(tab)}</p></div>{canCreate&&registryTabs.includes(tab)&&<button type="button" className={styles.primaryButton} onClick={()=>{if(actor.mode==="staff"){setTab("Capture in Office");setShowForm(false);}else setShowForm(v=>!v);}}>{actor.mode==="staff"?"Capture office application":showForm?"Close form":"New event +"}</button>}</div>}
         {notice&&<div className={styles.notice} role="status">{notice}</div>}
         {tab==="Dashboard"&&<>
           <section className={styles.hero}><div className={styles.heroOverlay}><span className={styles.heroKicker}>WELCOME BACK</span><h1>{actor.name} <span aria-hidden="true">👋</span></h1><p>Your digital workspace for events, community safety and progress.</p>{canCreate&&<button type="button" className={styles.heroButton} onClick={()=>{if(actor.mode==="staff"){setTab("Capture in Office");setShowForm(false);}else setShowForm(true);}}>{actor.mode==="staff"?"Capture an office application":"New event application"} <WorkHubIcon name="arrow" size={16}/></button>}</div><div className={styles.heroQuote}>Events.<br/>Safety.<br/>Progress.</div></section>
@@ -169,7 +169,7 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
           <a href="mailto:WCDAEms@govapps.wcsports.co.za">System · WCDAEms@govapps.wcsports.co.za</a>
           <a href="mailto:ServiceDesk@wcsports.co.za">Support · ServiceDesk@wcsports.co.za</a>
         </div>}</section>}
-        <footer className={styles.footer}>© MyWCDA Events · Western Cape Development Authority <Link href={actor.mode==="staff"?"/my-apps":"/"}>Back to GovApps ↗</Link></footer>
+        <footer className={styles.footer}>© MyEventDesk · Western Cape Development Authority <Link href={actor.mode==="staff"?"/my-apps":"/"}>Back to GovApps ↗</Link></footer>
       </main>
     </div>
   </div>;
