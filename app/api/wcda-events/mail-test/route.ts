@@ -4,11 +4,11 @@ import {mailConfigured,sendCaseMail} from "@/lib/ems/microsoft";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"private, no-store"};
+// Explicitly scoped to the three recipients requested for this controlled test.
 const recipients=[
-  "ebranch@wcsports.co.za",
   "thimna.proline@gmail.com",
   "selinangalo2@gmail.com",
-  "personnel@wcsports.co.za",
+  "ebranch@wcsports.co.za",
 ] as const;
 
 export async function POST(request:Request){
