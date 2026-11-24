@@ -4,7 +4,7 @@ import { supabaseConfig } from "@/lib/ams/supabase";
 
 export const externalCatalog=[
  {slug:"membership",name:"MyWCSA Membership",description:"Apply for and manage eligible membership services.",href:"/membership",category:"Membership",available:true},
- {slug:"wcda-events",name:"MyWCDA Events",description:"Register events, submit information and follow approved organiser workflows.",href:"/WCDA-Events",category:"Events",available:true},
+ {slug:"wcda-events",name:"MyWCDA Events",description:"Register events, submit information and follow approved organiser workflows.",href:"/WCDA-Events/portal",category:"Events",available:true},
  {slug:"applications",name:"MyWCSA Applications",description:"Request access to upcoming applications and submissions.",href:null,category:"Services",available:false},
 ] as const;
 export type ExternalAppSlug=typeof externalCatalog[number]["slug"];
