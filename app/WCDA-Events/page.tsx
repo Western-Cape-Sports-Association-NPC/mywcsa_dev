@@ -8,7 +8,7 @@ import styles from "./gateway.module.css";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "MyWCDA Events | Events Management System",
+  title: "MyEventDesk | Events Management System",
   description: "Western Cape Development Authority Events Management System. A connected workspace for event registration, assessment and operational oversight.",
 };
 
@@ -47,7 +47,7 @@ function GatewayFrame({children}:{children:ReactNode}) {
             <span className={styles.brandMarkInner}><i/><i/><i/></span>
           </span>
           <span className={styles.brandText}>
-            <strong>MyWCDA Events</strong>
+            <strong>MyEventDesk</strong>
             <small>WESTERN CAPE DEVELOPMENT AUTHORITY</small>
           </span>
         </Link>
@@ -55,7 +55,7 @@ function GatewayFrame({children}:{children:ReactNode}) {
       </header>
 
       <div className={styles.gatewayShell}>
-        <section className={styles.gatewayStory} aria-label="About MyWCDA Events">
+        <section className={styles.gatewayStory} aria-label="About MyEventDesk">
           <span className={styles.storyBloom} aria-hidden="true"/>
           <div className={styles.storyTop}>
             <span className={styles.storySeal}><OrganiserIcon/></span>
@@ -72,7 +72,7 @@ function GatewayFrame({children}:{children:ReactNode}) {
             </div>
           </div>
         </section>
-        <section className={styles.gatewayAccess} aria-label="MyWCDA Events secure access">
+        <section className={styles.gatewayAccess} aria-label="MyEventDesk secure access">
           {children}
         </section>
       </div>
@@ -110,7 +110,7 @@ export default async function WCDAEventsPage() {
     const returnTo = encodeURIComponent("/WCDA-Events");
     return <GatewayFrame>
       <span className={styles.accessEyebrow}>Welcome to your workspace</span>
-      <h1 className={styles.accessTitle}>Welcome to <span>MyWCDA Events.</span></h1>
+      <h1 className={styles.accessTitle}>Welcome to <span>MyEventDesk.</span></h1>
       <p className={styles.accessIntro}>A dedicated platform for event registration, assessments, endorsements and operational coordination. Choose your account type to continue securely.</p>
       <div className={styles.separator}/>
       <div className={styles.accessSectionTitle}><h2>CHOOSE HOW TO CONTINUE</h2><span>Secure sign in</span></div>
