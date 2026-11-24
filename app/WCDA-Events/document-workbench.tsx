@@ -43,7 +43,7 @@ export default function DocumentWorkbench({actor,events,section,onCapture}:{
  },[eventId,view,revision]);
  return <section className={styles.shell} aria-label="WCDA document centre">
   <header className={styles.hero}>
-    <div><span className={styles.kicker}>MYWCDA EVENTS / CONTROLLED RECORDS</span>
+    <div><span className={styles.kicker}>MYEVENTDESK / CONTROLLED RECORDS</span>
       <h2>Document Centre</h2>
       <p>Prepare internal letters and certificates, manage case evidence, and check document readiness in one workspace.</p></div>
     <div className={styles.heroMark} aria-hidden="true">WCDA<span>DOCS</span></div>
