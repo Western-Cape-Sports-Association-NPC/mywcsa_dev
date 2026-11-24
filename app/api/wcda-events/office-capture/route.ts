@@ -36,7 +36,7 @@ function readForm(raw:unknown){
 export async function POST(request:Request){
  try{
   if(!request.headers.get("origin")||request.headers.get("origin")!==new URL(request.url).origin)
-    throw new EmsError(403,"Open MyWCDA Events through GovApps to capture applications.");
+    throw new EmsError(403,"Open MyEventDesk through GovApps to capture applications.");
   const actor=await requireEmsActor();
   if(actor.mode!=="staff"||!["intake","registrar","manager","assessor","super_admin","executive","compliance","operations","finance","certificates"].includes(actor.role||""))
     throw new EmsError(403,"Employee intake access is required. An external organiser cannot use staff capture.");
