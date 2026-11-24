@@ -63,3 +63,16 @@
 .invoiceTools{display:flex;justify-content:flex-end;margin-top:8px}
 .invoiceTools button{border:1px solid #cbd8eb;background:#fff;color:#001484;border-radius:6px;padding:7px 10px;font:600 10px Poppins,sans-serif;cursor:pointer}
 @media(max-width:640px){.bulkBottom{align-items:stretch;flex-direction:column}.bulkBottom button{width:100%}.bulkTop strong{width:100%}}
+
+.itemBuilder{display:grid;gap:10px;margin-top:15px;padding:15px;border:1px solid #d7e2f1;border-radius:12px;background:#f7f9fd}
+.itemBuilder>strong{font-size:12px;color:#17345c}
+.chargeRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(115px,180px);align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #e1e8f2}
+.chargeRow label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:650;color:#2c4e75}
+.chargeRow input[type=checkbox]{width:16px;height:16px;accent-color:#001484}
+.chargeRow>input,.penaltyFields input,.penaltyFields select,.itemBuilder>.wide input{width:100%;min-width:0;border:1px solid #cfdeee;border-radius:8px;padding:9px 10px;background:#fff;color:#193357;font:400 11px Poppins,"Segoe UI",sans-serif}
+.penaltyFields{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;padding:4px 0 10px 24px}
+.penaltyFields label{display:grid;gap:5px;font-size:10px;font-weight:650;color:#405979}
+.discountRow{color:#216b50}
+.totalPreview{display:flex;align-items:center;justify-content:space-between;padding:13px 2px 5px;color:#17345c;font-size:12px}
+.totalPreview strong{font-size:20px;color:#001484}
+@media(max-width:640px){.chargeRow{grid-template-columns:1fr}.penaltyFields{grid-template-columns:1fr;padding-left:0}}
