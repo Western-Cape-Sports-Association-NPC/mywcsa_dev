@@ -23,9 +23,10 @@ export default async function OrganiserPortal({searchParams}:{searchParams:Promi
   return <main style={shell}><section style={panel}><Brand/><span style={eyebrow}>ACCOUNT CREATED · ACCESS CONTROL</span><h1>Your account is ready.</h1><p>{partner?"Your organisation must request WCDA Events access through its Business Partner workspace.":"Your WCDA Events access request must be approved before event records and applications are available."}</p><div style={statusBox}><strong>Access status</strong><span>Awaiting WCDA authorisation</span><small>Your GovApps account remains the same account used for the wider GovApps platform. Staff capture and personnel tools are not available in this portal.</small></div><Link href={partner?"/partner":"/external"} style={primary}>Continue to your GovApps account →</Link><form action={async()=>{"use server";await signOut({redirectTo:"/WCDA-Events/portal"});}}><button style={secondary}>Sign out</button></form></section></main>;
  }
  const destination="/WCDA-Events/portal";
+ function normaliseIdentifier(value:string){const m=/^(\\d{4})(\\d{2})(\\d{2})$/.exec(value);if(!m)return value;const [,year,day,month]=m;const iso=year+"-"+month+"-"+day;const date=new Date(iso+"T00:00:00.000Z");return !Number.isNaN(date.valueOf())&&date.toISOString().slice(0,10)===iso?iso:value;}
  async function signInExternal(form:FormData):Promise<void>{
   "use server";
-  const identifier=String(form.get("identifier")||"").trim(),password=String(form.get("password")||"");
+  const identifier=normaliseIdentifier(String(form.get("identifier")||"").trim()),password=String(form.get("password")||"");
   if(!identifier||!password||identifier.length>254||password.length>256)redirect("/WCDA-Events/portal?error=invalid&type=individual");
   try{await signIn("external-user",{identifier,password,redirectTo:destination});}
   catch(error){if(error instanceof AuthError)redirect("/WCDA-Events/portal?error=invalid&type=individual");throw error;}
