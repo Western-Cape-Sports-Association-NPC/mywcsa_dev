@@ -149,41 +149,96 @@ export default function GovernanceDesk({actor,eventId,reference,section,event,on
    },
   };
   const template=profile[kind]||profile.other;
-  setDraftTitle((kind==="endorsement_letter"?"EVENT ENDORSEMENT & ASSESSMENT RECORD":template.title)+" — "+event.name);
-  setDraftBody(kind==="endorsement_letter"?[
-   "CONTROLLED EVENT ENDORSEMENT RECORD — DRAFT / NOT ISSUED",
-   "",
-   "CASE PARTICULARS",
-   "EMS reference | "+reference,
-   "Event | "+event.name,
-   "Organiser | "+event.organiser_name,
-   "Category | "+event.category,
-   "Venue | "+event.venue_name,
-   "Venue address | "+(event.venue_address||"Not recorded"),
-   "Event dates | "+event.start_date+" to "+event.end_date,
-   "Registry status | "+event.status,
-   "",
-   "ENDORSEMENT CONTROL",
-   "Internal endorsement status | "+(event.status==="endorsed"?"Recorded as endorsed":event.status==="rejected"?"Not endorsed — rejected": "Not endorsed — pending / not recorded"),
-   "Decision authority | "+(event.decision_by_email||"No decision recorded"),
-   "Decision date | "+(event.decision_at||"Not recorded"),
-   "Decision reasons | "+(event.decision_reason||"No decision rationale recorded"),
-   "",
-   "ASSESSMENT AND CONDITIONS",
-   "Assessment summary | [Complete from verified checklist, risk assessment and supporting evidence]",
-   "Conditions | Subject to applicable legislation, municipal and venue requirements, safety obligations, permits, licences and approvals of competent authorities.",
-   "Evidence reviewed | [List verified document names / references; do not assume completeness]",
-   "",
-   "Prepared by | "+actor.name,
-   "Delegated signatory | Not assigned / not verified",
-   "Issue date | Not issued",
-   "",
-   "DRAFT — NOT ISSUED. Internal WCDA record only; not a municipal permit, statutory authorisation, safety certificate or proof of approval."
-  ].join("\n"):[template.opening,"","EMS case reference: "+reference,"Event name: "+event.name,"Organiser: "+event.organiser_name,"Recorded venue: "+event.venue_name,"Proposed dates: "+event.start_date+" to "+event.end_date,"","ASSESSMENT / EVENT CONTEXT","[Insert verified case facts.]","","VERIFICATION AND REQUIRED ACTION",template.notes,"","Supporting documents reviewed: [List verified evidence references]","Prepared by: "+actor.name+" (internal draft)","Signatory: [Not assigned or verified]","Issue date: [Not issued]","","DRAFT — NOT ISSUED. Not a permit, signed approval or issued certificate."].join("\n"));
+  if(kind==="approval_letter"){
+   const approved=event.status==="endorsed";
+   const rejected=event.status==="rejected";
+   const decision=approved?"APPROVED / ENDORSED":rejected?"NOT APPROVED":"PENDING — NO APPROVAL RECORDED";
+   setDraftTitle("OFFICIAL EVENT APPLICATION "+(approved?"APPROVAL":rejected?"DECISION":"STATUS")+" LETTER — "+event.name);
+   setDraftBody([
+    "WESTERN CAPE DEVELOPMENT AUTHORITY",
+    "EVENTS & SAFETY DEPARTMENT",
+    "",
+    "To: "+event.organiser_name,
+    "Subject: "+(approved?"Approval and endorsement of event application":rejected?"Outcome of event application":"Event application — assessment status"),
+    "EMS case reference: "+reference,
+    "",
+    "Dear Event Organiser,",
+    "",
+    approved
+     ?"The Western Cape Development Authority (WCDA), having considered the event particulars and the decision recorded on the WCDA Events Management System, confirms that the application identified below has been approved for WCDA endorsement, subject to the conditions in this letter."
+     :rejected
+      ?"The Western Cape Development Authority (WCDA) advises that the application identified below has not been approved. The recorded decision and reasons are set out for your attention."
+      :"The Western Cape Development Authority (WCDA) acknowledges receipt of the application identified below. Assessment is not yet concluded and this letter does not constitute approval or endorsement.",
+    "",
+    "1. EVENT PARTICULARS",
+    "Event name: "+event.name,
+    "Organiser: "+event.organiser_name,
+    "Category: "+event.category,
+    "Venue: "+event.venue_name,
+    "Venue address: "+(event.venue_address||"Not recorded"),
+    "Event dates: "+event.start_date+" to "+event.end_date,
+    "Decision status: "+decision,
+    "Decision date: "+(event.decision_at||"Not recorded"),
+    "Decision authority: "+(event.decision_by_email||"Not recorded"),
+    "",
+    "2. SCOPE OF WCDA DECISION",
+    approved
+     ?"This decision records WCDA's endorsement of the event application as assessed in the EMS case. It applies only to the event, organiser, venue and dates stated above. Any material change must be disclosed to WCDA and may require reassessment."
+     :rejected
+      ?"No WCDA endorsement is granted by this letter. The organiser must not represent this application as approved by WCDA."
+      :"No approval, endorsement or permission is granted at this stage. A further written decision from an authorised WCDA official is required.",
+    "",
+    "3. CONDITIONS AND ORGANISER RESPONSIBILITIES",
+    "The organiser remains responsible for:",
+    "• Obtaining all municipal, venue, landowner and other competent-authority permissions, permits and licences required by law.",
+    "• Implementing and maintaining an event-specific safety and emergency plan, including crowd management, access control, medical response and evacuation arrangements as applicable.",
+    "• Ensuring competent event personnel, contractors and service providers are appointed and appropriately briefed.",
+    "• Maintaining appropriate insurance and safeguarding arrangements where required.",
+    "• Complying with applicable legislation, approved venue conditions, occupational health and safety requirements and lawful instructions of authorities.",
+    "• Notifying WCDA promptly of incidents, material changes, postponement or cancellation.",
+    "",
+    "4. IMPORTANT LIMITATION",
+    "WCDA endorsement is not a municipal event permit, land-use consent, venue booking, liquor licence, road closure approval, fire clearance, safety certificate or any other statutory authorisation. Those approvals must be obtained separately from the relevant competent authorities before the event proceeds.",
+    "",
+    "5. DECISION RECORD",
+    "Recorded decision reasons: "+(event.decision_reason||"No decision rationale recorded in the case register."),
+    "",
+    "Please quote EMS reference "+reference+" in all correspondence with WCDA concerning this event.",
+    "",
+    "Yours faithfully,",
+    "",
+    "[Authorised WCDA signatory]",
+    "Western Cape Development Authority",
+    "Events & Safety Department",
+    "Date of issue: [Complete on authorised issue]",
+    "",
+    "DOCUMENT CONTROL: This is a generated draft. It may be issued only after verification of the EMS decision, approval of the final wording and signature by an authorised official."
+   ].join("\n"));
+  }else{
+   setDraftTitle((kind==="endorsement_letter"?"EVENT ENDORSEMENT & ASSESSMENT RECORD":template.title)+" — "+event.name);
+   setDraftBody(kind==="endorsement_letter"?[
+    "CONTROLLED EVENT ENDORSEMENT RECORD — DRAFT / NOT ISSUED","","CASE PARTICULARS",
+    "EMS reference | "+reference,"Event | "+event.name,"Organiser | "+event.organiser_name,"Category | "+event.category,
+    "Venue | "+event.venue_name,"Venue address | "+(event.venue_address||"Not recorded"),
+    "Event dates | "+event.start_date+" to "+event.end_date,"Registry status | "+event.status,"",
+    "ENDORSEMENT CONTROL",
+    "Internal endorsement status | "+(event.status==="endorsed"?"Recorded as endorsed":event.status==="rejected"?"Not endorsed — rejected":"Not endorsed — pending / not recorded"),
+    "Decision authority | "+(event.decision_by_email||"No decision recorded"),
+    "Decision date | "+(event.decision_at||"Not recorded"),
+    "Decision reasons | "+(event.decision_reason||"No decision rationale recorded"),"",
+    "ASSESSMENT AND CONDITIONS",
+    "Assessment summary | [Complete from verified checklist, risk assessment and supporting evidence]",
+    "Conditions | Subject to applicable legislation, municipal and venue requirements, safety obligations, permits, licences and approvals of competent authorities.",
+    "Evidence reviewed | [List verified document names / references; do not assume completeness]","",
+    "Prepared by | "+actor.name,"Delegated signatory | Not assigned / not verified","Issue date | Not issued","",
+    "DRAFT — NOT ISSUED. Internal WCDA record only; not a municipal permit, statutory authorisation, safety certificate or proof of approval."
+   ].join("\n"):[template.opening,"","EMS case reference: "+reference,"Event name: "+event.name,"Organiser: "+event.organiser_name,"Recorded venue: "+event.venue_name,"Proposed dates: "+event.start_date+" to "+event.end_date,"","ASSESSMENT / EVENT CONTEXT","[Insert verified case facts.]","","VERIFICATION AND REQUIRED ACTION",template.notes,"","Supporting documents reviewed: [List verified evidence references]","Prepared by: "+actor.name+" (internal draft)","Signatory: [Not assigned or verified]","Issue date: [Not issued]","","DRAFT — NOT ISSUED. Not a permit, signed approval or issued certificate."].join("\n"));
+  }
   setNotice("The "+nice(kind)+" template is ready to edit. Review all bracketed fields before saving.");
  }
  function exportDraft(d:Draft){
   if(d.kind==="endorsement_letter"){exportWcdaEndorsementPdf(event,reference);return;}
+  if(d.kind==="approval_letter"){exportWcdaApprovalLetterPdf(event,reference);return;}
   exportWcdaDraftPdf(d.title,d.body,reference);
  }
  async function copyDraft(d:Draft){
