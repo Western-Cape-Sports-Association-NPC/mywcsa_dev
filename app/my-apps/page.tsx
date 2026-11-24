@@ -8,7 +8,7 @@ import { hasSeenNotices } from "@/lib/govapps/staff-operations";
 const fallbackApps: LauncherItem[] = [
   { slug: "workhub", title: "MyWCSA WorkHub", description: "Your digital workplace for teams, tasks, leave and employee services.", href: "/workhub", category: "People", icon: "users", status: "available", featured: true, sort_order: 1 },
   { slug: "ams", title: "MyWCSA AMS", description: "Administration, school management, programmes and organisational records.", href: "/apps/ams", category: "Operations", icon: "grid", status: "available", featured: true, sort_order: 2 },
-  { slug: "wcda-events", title: "MyEventDesk", description: "Event cases, assignments, compliance reviews and approvals.", href: "/WCDA-Events", category: "Operations", icon: "calendar", status: "available", featured: true, sort_order: 3 },
+  { slug: "wcda-events", title: "MyEventDesk", description: "Events, applications, vetting, approvals and operations. Opens with your active GovApps staff session.", href: "/WCDA-Events", category: "Operations", icon: "calendar", status: "available", featured: true, sort_order: 3 },
   { slug: "membership", title: "MyWCSA Membership", description: "Organisation membership, registration, renewals and payments.", href: "/membership/dashboard", category: "Services", icon: "badge", status: "preview", featured: false, sort_order: 4 },
   { slug: "applications", title: "MyWCSA Applications", description: "Application processing, submissions and verification workflows.", href: "/apps/applications", category: "Administration", icon: "file", status: "preview", featured: false, sort_order: 5 },
   { slug: "csd", title: "MyWCSA CSD", description: "Suppliers, procurement and asset administration.", href: "/apps/csd", category: "Administration", icon: "briefcase", status: "preview", featured: false, sort_order: 6 },
@@ -38,7 +38,7 @@ async function getLauncherApps(): Promise<LauncherItem[]> {
       if (!base) return []; // No arbitrary/unreviewed destination can be injected from the database.
       return [{ ...base,
         title: r.slug === "wcda-events" ? base.title : typeof r.title === "string" ? r.title.slice(0, 70) : base.title,
-        description: typeof r.description === "string" ? r.description.slice(0, 180) : base.description,
+        description: r.slug === "wcda-events" ? base.description : typeof r.description === "string" ? r.description.slice(0, 180) : base.description,
         featured: typeof r.featured === "boolean" ? r.featured : base.featured,
         sort_order: typeof r.sort_order === "number" ? r.sort_order : base.sort_order,
       }];
