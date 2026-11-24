@@ -125,3 +125,90 @@ export function exportWcdaEndorsementPdf(event:EmsEvent,reference:string){
  pdf.text("Generated from EMS case data. Verify all entries and supporting evidence before any formal decision.",left,287);
  pdf.save("WCDA-"+reference.replace(/[^A-Za-z0-9-]/g,"-")+"-ENDORSEMENT-DRAFT.pdf");
 }
+
+export function exportWcdaApprovalLetterPdf(event:EmsEvent,reference:string){
+ const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+ const left=19,right=191,width=right-left;
+ const approved=event.status==="endorsed",rejected=event.status==="rejected";
+ const status=approved?"APPROVED / ENDORSED":rejected?"NOT APPROVED":"PENDING — NO APPROVAL RECORDED";
+ const navy:[number,number,number]=[0,20,132],ink:[number,number,number]=[35,52,79];
+ let y=0,page=1;
+ const header=()=>{
+  pdf.setFillColor(...navy);pdf.rect(0,0,210,37,"F");
+  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(13);
+  pdf.text("WESTERN CAPE DEVELOPMENT AUTHORITY",left,14);
+  pdf.setFontSize(8.5);pdf.text("EVENTS & SAFETY DEPARTMENT",left,21);
+  pdf.setFontSize(15);pdf.text("EVENT APPLICATION DECISION LETTER",left,31);
+  pdf.setTextColor(...ink);pdf.setFont("helvetica","normal");pdf.setFontSize(8);
+  pdf.text("EMS CASE: "+reference,left,45);pdf.text("DATE: "+(event.decision_at?date(event.decision_at):"TO BE COMPLETED ON ISSUE"),right,45,{align:"right"});
+  pdf.setDrawColor(205,216,234);pdf.line(left,49,right,49);
+ };
+ const footer=()=>{
+  pdf.setDrawColor(205,216,234);pdf.line(left,282,right,282);
+  pdf.setTextColor(95,108,130);pdf.setFont("helvetica","normal");pdf.setFontSize(7);
+  pdf.text("WCDA Events | Controlled correspondence | "+reference+" | Page "+page,left,288);
+  if(!approved||!event.decision_at){pdf.setTextColor(160,55,55);pdf.setFont("helvetica","bold");pdf.setFontSize(9);pdf.text("DRAFT — NOT ISSUED",right,288,{align:"right"});}
+ };
+ header();y=59;
+ const addText=(text:string,size=9,bold=false,indent=0)=>{
+  pdf.setFont("helvetica",bold?"bold":"normal");pdf.setFontSize(size);pdf.setTextColor(...ink);
+  const lines=pdf.splitTextToSize(text,width-indent) as string[];
+  for(const line of lines){if(y>269){footer();pdf.addPage();page++;header();y=59;}
+   pdf.text(line,left+indent,y);y+=size>=10?5.5:4.7;}
+ };
+ const heading=(text:string)=>{y+=2;addText(text,9,true);y+=2;};
+ addText("To: "+event.organiser_name,9,true);
+ addText("Event organiser",8);
+ y+=2;addText("SUBJECT: "+(approved?"APPROVAL AND ENDORSEMENT OF EVENT APPLICATION":rejected?"OUTCOME OF EVENT APPLICATION":"EVENT APPLICATION — ASSESSMENT STATUS"),10,true);y+=2;
+ pdf.setFillColor(approved?230:rejected?250:255,approved?241:rejected?235:247,approved?233:rejected?235:230);pdf.rect(left,y-3,width,10,"F");
+ pdf.setTextColor(...(approved?[25,105,65]:rejected?[145,45,45]:[130,85,25]) as [number,number,number]);pdf.setFont("helvetica","bold");pdf.setFontSize(9);pdf.text("DECISION: "+status,left+3,y+3);y+=13;
+ addText("Dear Event Organiser,",9,false);y+=2;
+ addText(approved
+  ?"The Western Cape Development Authority (WCDA), having considered the event particulars and the decision recorded on the WCDA Events Management System, confirms that the application identified below has been approved for WCDA endorsement, subject to the conditions set out in this letter."
+  :rejected
+   ?"The Western Cape Development Authority (WCDA) advises that the application identified below has not been approved. The recorded decision and reasons are provided for your attention."
+   :"The Western Cape Development Authority (WCDA) acknowledges the application identified below. Assessment has not been concluded. This correspondence is a status notification only and does not constitute approval or endorsement.",9);
+ heading("1. EVENT PARTICULARS");
+ const rows:[string,string][]=[
+  ["EMS reference",reference],["Event",event.name],["Organiser",event.organiser_name],
+  ["Category",event.category||"Not recorded"],["Venue",event.venue_name||"Not recorded"],
+  ["Venue address",event.venue_address||"Not recorded"],["Event dates",event.start_date+" to "+event.end_date],
+  ["Decision status",status],["Decision authority",event.decision_by_email||"Not recorded"],
+  ["Decision date",event.decision_at?date(event.decision_at):"Not recorded"]
+ ];
+ const labelW=43;
+ for(const [label,value] of rows){
+  const vl=pdf.splitTextToSize(value||"—",width-labelW-7) as string[];
+  const h=Math.max(7,vl.length*4+3);
+  if(y+h>269){footer();pdf.addPage();page++;header();y=59;}
+  pdf.setFillColor(244,247,252);pdf.rect(left,y,width,h,"F");pdf.setDrawColor(220,227,238);pdf.rect(left,y,width,h);
+  pdf.setTextColor(...navy);pdf.setFont("helvetica","bold");pdf.setFontSize(7.5);pdf.text(label.toUpperCase(),left+2,y+4.5);
+  pdf.setTextColor(...ink);pdf.setFont("helvetica","normal");pdf.setFontSize(8);vl.forEach((line,i)=>pdf.text(line,left+labelW,y+4.5+i*4));
+  y+=h;
+ }
+ heading("2. SCOPE OF THE DECISION");
+ addText(approved
+  ?"This decision records WCDA's endorsement of the event application as assessed in the EMS case. It applies only to the event, organiser, venue and dates stated in this letter. Any material change must be disclosed to WCDA and may require reassessment."
+  :rejected
+   ?"No WCDA endorsement is granted. The organiser must not represent this application as approved by WCDA."
+   :"No approval, endorsement or permission is granted at this stage. A further written decision from an authorised WCDA official is required.",8.5);
+ heading("3. CONDITIONS AND ORGANISER RESPONSIBILITIES");
+ const obligations=[
+  "Obtain all municipal, venue, landowner and other competent-authority permissions, permits and licences required by law.",
+  "Implement and maintain an event-specific safety and emergency plan, including crowd management, access control, medical response and evacuation arrangements as applicable.",
+  "Ensure competent event personnel, contractors and service providers are appointed and appropriately briefed.",
+  "Maintain appropriate insurance and safeguarding arrangements where required.",
+  "Comply with applicable legislation, venue conditions, occupational health and safety requirements and lawful instructions of authorities.",
+  "Notify WCDA promptly of incidents, material changes, postponement or cancellation."
+ ];
+ for(let i=0;i<obligations.length;i++)addText((i+1)+". "+obligations[i],8);
+ heading("4. STATUTORY LIMITATION");
+ addText("WCDA endorsement is not a municipal event permit, land-use consent, venue booking, liquor licence, road closure approval, fire clearance, safety certificate or any other statutory authorisation. Those approvals must be obtained separately from the relevant competent authorities before the event proceeds.",8);
+ heading("5. DECISION REASONS");
+ addText(event.decision_reason||"No decision rationale is recorded in the EMS case register.",8);
+ y+=4;addText("Please quote EMS reference "+reference+" in all correspondence with WCDA concerning this event.",8.5);
+ y+=4;addText("Yours faithfully,",9);y+=10;addText("[Authorised WCDA signatory]",9,true);addText("Western Cape Development Authority");addText("Events & Safety Department");addText("Date of issue: [Complete on authorised issue]");
+ footer();
+ if(!approved||!event.decision_at){pdf.setTextColor(160,55,55);pdf.setFont("helvetica","bold");pdf.setFontSize(12);pdf.text("DRAFT — NOT ISSUED",105,274,{align:"center"});}
+ pdf.save("WCDA-"+reference.replace(/[^A-Za-z0-9-]/g,"-")+"-APPROVAL-LETTER.pdf");
+}
