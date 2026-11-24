@@ -62,7 +62,7 @@ export async function POST(request: Request) {
             "Event dates: " + input.startDate + " to " + input.endDate,
             "Current status: Submitted for intake review",
             "",
-            "You can sign in to MyWCDA Events to follow the application, upload supporting documents and respond to requests for information.",
+            "You can sign in to MyEventDesk to follow the application, upload supporting documents and respond to requests for information.",
             "",
             "Please note: submission is not approval, endorsement or a municipal permit. Relevant vetting and external permissions remain subject to the applicable authorities.",
             "",
