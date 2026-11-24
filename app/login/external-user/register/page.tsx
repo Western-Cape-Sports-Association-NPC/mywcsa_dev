@@ -23,7 +23,7 @@ type Query = { returnTo?: string; error?: string; wcda?: string };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function safeDestination(value?: string) {
-  return value === "/WCDA-Events/portal" || (value && /^\\/external(?:\\/[^\\\\\\r\\n?#]*)?(?:\\?[^\\\\\\r\\n#]*)?$/.test(value)) ? value : "/external";
+  return value === "/WCDA-Events/portal" ? value : "/external";
 }
 
 function validBirthDate(iso: string) {
