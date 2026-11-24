@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 type Query = { returnTo?: string; mode?: string; error?: string; created?: string; wcda?: string; request?: string };
 function safeDestination(value?: string) {
-  return value && /^\/external(?:\/[^\\\r\n?#]*)?(?:\?[^\\\r\n#]*)?$/.test(value) ? value : "/external";
+  return value === "/WCDA-Events/portal" || (value && /^\\/external(?:\\/[^\\\\\\r\\n?#]*)?(?:\\?[^\\\\\\r\\n#]*)?$/.test(value)) ? value : "/external";
 }
 
 // The existing Supabase RPC accepts ISO dates. Also accept the agreed
