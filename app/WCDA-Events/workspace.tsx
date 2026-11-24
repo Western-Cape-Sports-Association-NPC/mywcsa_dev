@@ -15,6 +15,7 @@ import DocumentWorkbench from "./document-workbench";
 import CorrespondenceCentre from "./correspondence-centre";
 import InsightViews, {type Area as InsightArea} from "./insight-views";
 import OrganiserOperations from "./organiser-operations";
+import PenaltiesCatalogue from "./penalties-catalogue";
 
 type NavGroup = { name: string; items: string[] };
 const internal: NavGroup[] = [
@@ -23,15 +24,15 @@ const internal: NavGroup[] = [
   {name:"Governance & Safety",items:["Reviews & Endorsements","Safety & Compliance","Inspections & Corrective Actions"]},
   {name:"People & Operations",items:["Contractors & Vendors","Personnel & Rosters","Logistics & Facilities","Access & Accreditation","Live Operations Centre","Incidents & Emergencies"]},
   {name:"Official Documents",items:["Letters & Memoranda","Certificates & Verification","Documents & Records"]},
-  {name:"Finance & Support",items:["Finance & Payments","Tariffs & Quotations","Correspondence & Cases"]},
+  {name:"Finance & Support",items:["Finance & Payments","Tariffs & Quotations","Penalties Catalogue","Correspondence & Cases"]},
   {name:"Intelligence & Control",items:["Reports & Intelligence","Administration & Audit"]},
 ];
-const external: NavGroup[] = [{name:"Organiser Workspace",items:["Dashboard","Event Applications","My Events","Documents & Compliance","Event Operations","Payments & Invoices","Letters & Certificates","Messages & Support"]}];
+const external: NavGroup[] = [{name:"Organiser Workspace",items:["Dashboard","Event Applications","My Events","Documents & Compliance","Event Operations","Payments & Invoices","Penalties & Charges","Letters & Certificates","Messages & Support"]}];
 const essentialStaff:NavGroup[]=[
- {name:"Everyday tools",items:["Dashboard","Capture in Office","Event Applications","Finance & Payments","Tariffs & Quotations","Documents & Records","My Work"]},
+ {name:"Everyday tools",items:["Dashboard","Capture in Office","Event Applications","Finance & Payments","Tariffs & Quotations","Penalties Catalogue","Documents & Records","My Work"]},
  {name:"Communication",items:["Correspondence & Cases"]},
 ];
-const essentialOrganiser:NavGroup[]=[{name:"Get started",items:["Dashboard","Event Applications","My Events","Documents & Compliance","Payments & Invoices","Messages & Support"]}];
+const essentialOrganiser:NavGroup[]=[{name:"Get started",items:["Dashboard","Event Applications","My Events","Documents & Compliance","Payments & Invoices","Penalties & Charges","Messages & Support"]}];
 const documentSections=["Documents & Records","Letters & Memoranda","Certificates & Verification"];
 const sectionHint=(s:string)=>documentSections.includes(s)?"Draft letters, check case evidence and manage your documents from one place.":
  /Finance|Payments/.test(s)?"Prepare, review or pay invoices linked to authorised events.":
@@ -147,6 +148,7 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
           onCapture={()=>setTab("Capture in Office")} onFinance={()=>setTab("Finance & Payments")}/>}
         {actor.mode==="staff"&&tab==="Finance & Payments"&&<FinanceDesk actor={actor} events={events}/>}
         {actor.mode==="staff"&&tab==="Tariffs & Quotations"&&<FinanceRegister actor={actor} events={events}/>}
+        {actor.mode==="staff"&&tab==="Penalties Catalogue"&&<PenaltiesCatalogue mode="system"/>}
         {actor.mode==="staff"&&documentSections.includes(tab)&&<DocumentWorkbench key={tab} actor={actor} events={events} section={tab as "Documents & Records"|"Letters & Memoranda"|"Certificates & Verification"} onCapture={()=>setTab("Capture in Office")}/>} 
         {actor.mode==="staff"&&tab==="Correspondence & Cases"&&<CorrespondenceCentre actor={actor} events={events}/>}
         {actor.mode==="staff"&&tab!=="Capture in Office"&&tab!=="Finance & Payments"&&tab!=="Tariffs & Quotations"&&!documentSections.includes(tab)&&tab!=="Correspondence & Cases"&&!isInsight(tab)&&<StaffConsole key={tab} actor={actor} section={tab} onChange={()=>void refresh()}/>}
@@ -156,6 +158,7 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
           <p className={styles.empty}>{isStaffViewer?"No records are displayed until your WCDA EMS role is approved.":notice?"The event service needs configuration before records can be shown.":"No matching event records have been registered."}</p>}
         </section>}
         {actor.mode!=="staff"&&tab==="Payments & Invoices"&&<FinanceDesk actor={actor} events={events}/>}
+        {actor.mode!=="staff"&&tab==="Penalties & Charges"&&<PenaltiesCatalogue mode="paywall"/>}
         {actor.mode!=="staff"&&tab==="Documents & Compliance"&&<DocumentsCentre actor={actor} events={events}/>}
         {actor.mode!=="staff"&&tab==="Messages & Support"&&<CorrespondenceCentre actor={actor} events={events}/>}
         {actor.mode!=="staff"&&(tab==="Event Operations"||tab==="Letters & Certificates")&&<OrganiserOperations
