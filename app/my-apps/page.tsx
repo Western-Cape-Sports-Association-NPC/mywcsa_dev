@@ -37,7 +37,7 @@ async function getLauncherApps(): Promise<LauncherItem[]> {
       const base = typeof r.slug === "string" ? approved.get(r.slug) : undefined;
       if (!base) return []; // No arbitrary/unreviewed destination can be injected from the database.
       return [{ ...base,
-        title: typeof r.title === "string" ? r.title.slice(0, 70) : base.title,
+        title: r.slug === "wcda-events" ? base.title : typeof r.title === "string" ? r.title.slice(0, 70) : base.title,
         description: typeof r.description === "string" ? r.description.slice(0, 180) : base.description,
         featured: typeof r.featured === "boolean" ? r.featured : base.featured,
         sort_order: typeof r.sort_order === "number" ? r.sort_order : base.sort_order,
