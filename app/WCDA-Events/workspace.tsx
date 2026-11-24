@@ -93,11 +93,11 @@ export default function EmsWorkspace({actor}:{actor:EmsActor}) {
 
   return <div className={styles.shell}>
     <header className={styles.topbar}>
-      <div className={styles.topBrand}><img src="/mywcsa-logo.png" alt="MyWCSA GovApps"/><span><strong>MyWCDA Events</strong><small>Events | Safety | Progress</small></span></div>
+      <div className={styles.topBrand}><img src="/mywcsa-logo.png" alt="MyWCSA GovApps"/><span><strong>{actor.mode==="staff"?"WCDA Events":"MyEventDesk"}</strong><small>{actor.mode==="staff"?"STAFF · EVENTS · SAFETY":"ORGANISER · PARTNER · EVENTS"}</small></span></div>
       <div className={styles.headerSearch}><WorkHubIcon name="search" size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} aria-label="Search EMS pages and events" placeholder="Search MyWCDA Events..."/>
         {matches.length>0&&<div className={styles.searchResults}>{matches.map(x=><button type="button" key={x} onClick={()=>{setTab(x);setQuery("");setShowForm(false);setSimpleMode(false);}}><WorkHubIcon name={iconFor(x)} size={17}/>{x}</button>)}</div>}
       </div>
-      <div className={styles.topActions}><Link href={actor.mode==="staff"?"/my-apps":"/"} className={styles.backLink}>My Apps <WorkHubIcon name="external" size={13}/></Link><span className={styles.avatar}>{actor.name.slice(0,1).toUpperCase()}</span><span className={styles.accountName}>{actor.name}<small>{actor.mode==="staff"?"Employee":"Organiser"}</small></span></div>
+      <div className={styles.topActions}>{actor.mode==="organiser"&&<Link href="/eventdesk/organisation" className={styles.backLink}>Organisation profile</Link>}<Link href={actor.mode==="staff"?"/my-apps":"/external"} className={styles.backLink}>My Apps <WorkHubIcon name="external" size={13}/></Link><span className={styles.avatar}>{actor.name.slice(0,1).toUpperCase()}</span><span className={styles.accountName}>{actor.name}<small>{actor.mode==="staff"?"Employee":"Organiser"}</small></span></div>
     </header>
     <div className={`${styles.appBody} ${collapsed?styles.layoutCollapsed:""}`}>
       <aside className={styles.sidebar} style={{position:pinned?"sticky":"relative",top:pinned?10:undefined}}>
