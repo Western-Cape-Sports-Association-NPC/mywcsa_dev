@@ -105,7 +105,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
    const pdf=new jsPDF();
    pdf.setFillColor(0,20,132);pdf.rect(0,0,210,36,"F");
    pdf.setFont("helvetica","bold");pdf.setFontSize(17);pdf.setTextColor(255,255,255);
-   pdf.text("MyWCDA Events",16,22);
+   pdf.text("MyEventDesk",16,22);
    pdf.setTextColor(30,48,83);pdf.setFontSize(17);pdf.text("PAYMENT CONFIRMATION",16,56);
    pdf.setFont("helvetica","normal");pdf.setFontSize(10);
    const lines=[
@@ -130,7 +130,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
   }catch{setError("Could not create the payment confirmation document.");}
  }
  return <section className={styles.root}>
-  <div className={styles.heading}><div><span className={styles.overline}>MYWCDA EVENTS · SECURE FINANCIAL SERVICES</span><h2>{isStaff?"Event billing & payment control":"Your invoices & payments"}</h2><p>{isStaff?"Manage approved official event charges, independent finance approvals and verified Paystack settlements.":"Review approved event charges and pay safely through Paystack. Charges cannot be changed in your browser."}</p></div><button type="button" onClick={()=>void refresh()} disabled={loading||busy}>↻ Refresh</button></div>
+  <div className={styles.heading}><div><span className={styles.overline}>MYEVENTDESK · SECURE FINANCIAL SERVICES</span><h2>{isStaff?"Event billing & payment control":"Your invoices & payments"}</h2><p>{isStaff?"Manage approved official event charges, independent finance approvals and verified Paystack settlements.":"Review approved event charges and pay safely through Paystack. Charges cannot be changed in your browser."}</p></div><button type="button" onClick={()=>void refresh()} disabled={loading||busy}>↻ Refresh</button></div>
   <PenaltiesCatalogue mode={isStaff?"system":"paywall"}/>
   {error&&<p className={styles.alert} role="alert">{error}</p>}
   {message&&<p className={styles.success} role="status">{message}</p>}
