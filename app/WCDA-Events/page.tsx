@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {redirect} from "next/navigation";
 import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import { EmsError, EMS_MAILBOXES, getEmsActor } from "@/lib/ems/server";
@@ -103,6 +104,8 @@ function AccessNotice({title,detail}:{title:string;detail:string}) {
 
 export default async function WCDAEventsPage() {
   const session = await auth();
+  const provider=(session?.user as ({authProvider?:string}|undefined))?.authProvider;
+  if(session?.user&&(provider==="external-user"||provider==="business-partner"))redirect("/WCDA-Events/portal");
   if (!session?.user) {
     const returnTo = encodeURIComponent("/WCDA-Events");
     return <GatewayFrame>
@@ -120,25 +123,17 @@ export default async function WCDAEventsPage() {
           </span>
           <ArrowIcon/>
         </Link>
-        <Link href={"/login/business-partner?returnTo=" + returnTo} className={styles.accessOption}>
+        <Link href="/WCDA-Events/portal" className={styles.accessOption}>
           <span className={styles.optionIcon}><PartnerIcon/></span>
           <span className={styles.optionCopy}>
-            <strong>Business partner</strong>
-            <small>Partner organisations and representatives</small>
-          </span>
-          <ArrowIcon/>
-        </Link>
-        <Link href={"/login/external-user?returnTo=" + returnTo} className={styles.accessOption}>
-          <span className={styles.optionIcon}><OrganiserIcon/></span>
-          <span className={styles.optionCopy}>
-            <strong>External organiser</strong>
-            <small>Submit or manage your event applications</small>
+            <strong>Organiser &amp; business partner portal</strong>
+            <small>Separate sign-in and registration for external applicants</small>
           </span>
           <ArrowIcon/>
         </Link>
       </div>
       <div className={styles.accessBottom}>
-        <p className={styles.noticeHelp}>New organiser? <Link href="/WCDA-Events/register">Create an organiser account and apply for access</Link>.</p>
+        <p className={styles.noticeHelp}>New organiser or business? <Link href="/WCDA-Events/portal">Sign in or create an account in the external portal</Link>.</p>
         <div className={styles.securityNote}>
           <ShieldIcon/>
           <p>Your access is managed through MyWCSA GovApps. Features and records are available according to your authorised role.</p>
