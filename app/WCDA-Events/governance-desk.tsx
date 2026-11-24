@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from "react";
 import type {EmsActor,EmsEvent} from "@/lib/ems/types";
-import {exportWcdaDraftPdf,exportWcdaEndorsementPdf} from "@/lib/ems/document-engine";
+import {exportWcdaApprovalLetterPdf,exportWcdaDraftPdf,exportWcdaEndorsementPdf} from "@/lib/ems/document-engine";
 import styles from "./governance-desk.module.css";
 import CertificateComposer from "./certificate-composer";
 
