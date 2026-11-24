@@ -17,9 +17,9 @@ export function exportWcdaInvoice(invoice:InvoiceDocument,event?:EmsEvent,receip
  const organiser=safe(event?.organiser_name||"Event organiser");
  const rawDescription=String(invoice.description||"").slice(0,500);
  const isItemised=rawDescription.startsWith("ITEMISED INVOICE");
- const isPenaltyInvoice=/^PENALTIES CATALOGUE\\s*[—:-]?\\s*/i.test(rawDescription);
- const itemLines=isItemised?rawDescription.split("\\n").slice(1).filter(line=>line&&!line.startsWith("TOTAL DUE")):[];
- const description=rawDescription.replace(/^ITEMISED INVOICE\\n/,"").replace(/^PENALTIES CATALOGUE\\s*[—:-]?\\s*/i,"");
+ const isPenaltyInvoice=/^PENALTIES CATALOGUE\s*[—:-]?\s*/i.test(rawDescription);
+ const itemLines=isItemised?rawDescription.split("\n").slice(1).filter(line=>line&&!line.startsWith("TOTAL DUE")):[];
+ const description=rawDescription.replace(/^ITEMISED INVOICE\n/,"").replace(/^PENALTIES CATALOGUE\s*[—:-]?\s*/i,"");
  const address=["7 Bree Street","Touchstone House","Cape Town","8001"].join("\n");
  pdf.setFillColor(0,20,132);pdf.rect(0,0,210,40,"F");
  pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(18);pdf.text("WESTERN CAPE SPORTS ASSOCIATION NPC",left,16);
