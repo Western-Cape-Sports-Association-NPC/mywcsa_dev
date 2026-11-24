@@ -23,6 +23,8 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  const[eventId,setEventId]=useState("");
  const[amount,setAmount]=useState("");
  const[description,setDescription]=useState("");
+ const[items,setItems]=useState({eventFee:{on:true,amount:""},penalty:{on:false,amount:"",code:"P-05",reason:""},adminFee:{on:false,amount:""},inspection:{on:false,amount:""},lateFee:{on:false,amount:""},discount:{on:false,amount:""}});
+ const selectedTotal=useMemo(()=>{const cents=(v:string)=>/^\\d+(\\.\\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0;const gross=Object.entries(items).filter(([k,v])=>k!=="discount"&&v.on).reduce((n,[,v])=>n+cents(v.amount),0);return Math.max(0,gross-(items.discount.on?cents(items.discount.amount):0));},[items]);
  const[reason,setReason]=useState("");
  const[activeInvoice,setActiveInvoice]=useState("");
  const[selectedInvoices,setSelectedInvoices]=useState<string[]>([]);
@@ -52,7 +54,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
     window.location.assign(x.url);
     return;
    }
-   if(payload.action==="prepare"){setAmount("");setDescription("");setEventId("");}
+   if(payload.action==="prepare"){setAmount("");setDescription("");setEventId("");setItems({eventFee:{on:true,amount:""},penalty:{on:false,amount:"",code:"P-05",reason:""},adminFee:{on:false,amount:""},inspection:{on:false,amount:""},lateFee:{on:false,amount:""},discount:{on:false,amount:""}});}
    setReason("");setActiveInvoice("");
    await refresh();
    setMessage(payload.action==="prepare"
@@ -76,10 +78,26 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
  }
  function prepare(e:FormEvent){
   e.preventDefault();
-  if(!/^\d+(\.\d{1,2})?$/.test(amount)){setError("Enter a valid rand amount, with no more than two decimal places.");return;}
-  const cents=Math.round(Number(amount)*100);
-  if(!Number.isSafeInteger(cents)||cents<100||cents>100000000){setError("Enter an amount between R1.00 and R1,000,000.00.");return;}
-  void execute({action:"prepare",eventId,amountCents:cents,description});
+  const money=(v:string)=>/^\\d+(\\.\\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0;
+  const labels={eventFee:"Event fee",penalty:"Penalty / compliance charge",adminFee:"Administration fee",inspection:"Inspection / assessment fee",lateFee:"Late application fee"} as const;
+  const lines:string[]=[];
+  for(const key of Object.keys(labels) as Array<keyof typeof items>){
+   const item=items[key];if(!item.on)continue;
+   const value=money(item.amount);if(value<100){setError("Enter at least R1.00 for every selected charge.");return;}
+   const detail=key==="penalty"?" — "+item.code+" "+item.reason.trim():"";
+   if(key==="penalty"&&item.reason.trim().length<5){setError("Add the specific penalty reason and code.");return;}
+   lines.push(labels[key]+detail+" | "+rand(value));
+  }
+  const discount=items.discount.on?money(items.discount.amount):0;
+  if(items.discount.on&&discount<1){setError("Enter a valid discount amount.");return;}
+  if(items.discount.on)lines.push("Approved discount | -"+rand(discount));
+  const gross=(Object.keys(labels) as Array<keyof typeof items>).reduce((n,k)=>n+(items[k].on?money(items[k].amount):0),0);
+  const total=gross-discount;
+  if(total<100||total>100000000){setError("Select charges and ensure the final total is between R1.00 and R1,000,000.00.");return;}
+  const note=description.trim()? "\\nNote: "+description.trim():"";
+  const detail="ITEMISED INVOICE\\n"+lines.join("\\n")+"\\nTOTAL DUE | "+rand(total)+note;
+  if(detail.length>500){setError("Shorten the additional note or penalty reason so the invoice description fits.");return;}
+  void execute({action:"prepare",eventId,amountCents:total,description:detail});
  }
  async function receiptPdf(invoice:EmsInvoice,receipt:EmsReceipt){
   try{
@@ -120,11 +138,19 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
    <div className={styles.cardTitle}><h3>Prepare an event invoice</h3><span>Finance authorisation</span></div>
    <p className={styles.muted}>Only approved, documented fees should be entered. No automatic charge is applied to event applications.</p>
    <div className={styles.formGrid}>
-    <label>Registered event<select required value={eventId} onChange={e=>setEventId(e.target.value)}><option value="">Select an unbilled event</option>{unbilled.map(e=><option key={e.id} value={e.id}>{e.reference} · {e.name}</option>)}</select></label>
-    <label>Amount in ZAR<input required inputMode="decimal" pattern="[0-9]+(\.[0-9]{1,2})?" placeholder="e.g. 350.00" value={amount} onChange={e=>setAmount(e.target.value)}/></label>
-    <label className={styles.wide}>Invoice description / reasons for penalization or approved fee basis<input required minLength={8} maxLength={500} placeholder="PENALTIES CATALOGUE — P-05: Failure to implement safety controls; event safety controls were not implemented after written notice." value={description} onChange={e=>setDescription(e.target.value)}/></label>
+    <label className={styles.wide}>Registered event<select required value={eventId} onChange={e=>setEventId(e.target.value)}><option value="">Select an unbilled event</option>{unbilled.map(e=><option key={e.id} value={e.id}>{e.reference} · {e.name}</option>)}</select></label>
    </div>
-   <div className={styles.formFoot}><small>A different manager or executive must approve the prepared invoice. No payment is taken at this step.</small><button type="submit" disabled={busy||!eventId||description.trim().length<8}>{busy?"Saving…":"Prepare invoice"}</button></div>
+   <div className={styles.itemBuilder}>
+    <strong>Choose the items to show on the invoice</strong>
+    <div className={styles.chargeRow}><label><input type="checkbox" checked={items.eventFee.on} onChange={e=>setItems(old=>({...old,eventFee:{...old.eventFee,on:e.target.checked}}))}/> Event fee</label><input inputMode="decimal" placeholder="Amount (R)" value={items.eventFee.amount} onChange={e=>setItems(old=>({...old,eventFee:{...old.eventFee,amount:e.target.value}}))}/></div>
+    <div className={styles.chargeRow}><label><input type="checkbox" checked={items.penalty.on} onChange={e=>setItems(old=>({...old,penalty:{...old.penalty,on:e.target.checked}}))}/> Penalty / compliance charge</label><input inputMode="decimal" placeholder="Amount (R)" value={items.penalty.amount} onChange={e=>setItems(old=>({...old,penalty:{...old.penalty,amount:e.target.value}}))}/></div>
+    {items.penalty.on&&<div className={styles.penaltyFields}><label>Penalty code<select value={items.penalty.code} onChange={e=>setItems(old=>({...old,penalty:{...old.penalty,code:e.target.value}}))}>{Array.from({length:12},(_,i)=>"P-"+String(i+1).padStart(2,"0")).map(code=><option key={code}>{code}</option>)}</select></label><label>Specific breach / reason<input value={items.penalty.reason} onChange={e=>setItems(old=>({...old,penalty:{...old.penalty,reason:e.target.value}}))} placeholder="Documented breach / reason"/></label></div>}
+    {([{key:"adminFee",label:"Administration fee"},{key:"inspection",label:"Inspection / assessment fee"},{key:"lateFee",label:"Late application fee"}] as const).map(row=><div className={styles.chargeRow} key={row.key}><label><input type="checkbox" checked={items[row.key].on} onChange={e=>setItems(old=>({...old,[row.key]:{...old[row.key],on:e.target.checked}}))}/> {row.label}</label><input inputMode="decimal" placeholder="Amount (R)" value={items[row.key].amount} onChange={e=>setItems(old=>({...old,[row.key]:{...old[row.key],amount:e.target.value}}))}/></div>)}
+    <div className={styles.chargeRow discountRow}><label><input type="checkbox" checked={items.discount.on} onChange={e=>setItems(old=>({...old,discount:{...old.discount,on:e.target.checked}}))}/> Discount</label><input inputMode="decimal" placeholder="Discount (R)" value={items.discount.amount} onChange={e=>setItems(old=>({...old,discount:{...old.discount,amount:e.target.value}}))}/></div>
+    <div className={styles.totalPreview}><span>Invoice total</span><strong>{rand(selectedTotal)}</strong></div>
+    <label className={styles.wide}>Additional invoice note (optional)<input maxLength={150} placeholder="Fee basis / supporting approval reference" value={description} onChange={e=>setDescription(e.target.value)}/></label>
+   </div>
+   <div className={styles.formFoot}><small>Use only documented and authorised charges. Discounts need approval. A different manager or executive must independently approve this invoice.</small><button type="submit" disabled={busy||!eventId}>{busy?"Saving…":"Prepare invoice"}</button></div>
   </form>}
   <div className={styles.card}>
    <div className={styles.cardTitle}><h3>{isStaff?"Official event invoices":"Invoices linked to your events"}</h3><span>{records.length} record(s)</span></div>
