@@ -4,7 +4,7 @@ import type {EmsActor,EmsEvent} from "@/lib/ems/types";
 import styles from "./certificate-composer.module.css";
 
 type Row={key:number;date:string;venue:string;start:string;end:string};
-const verificationFooter="AN DIGITAL CERTIFICATE ISSUED BY THE MYWCDA EVENTS – VERIFICATION: mail-wcda@wcsports.co.za";
+const verificationFooter="AN DIGITAL CERTIFICATE ISSUED BY THE MYEVENTDESK – VERIFICATION: mail-wcda@wcsports.co.za";
 const conditions="This endorsement remains subject to applicable legislation, municipal and venue requirements, health and safety obligations, permits, licences and approvals of the relevant competent authorities.";
 const pad=(n:number)=>String(n).padStart(2,"0");
 function isoDate(date:Date){return date.getUTCFullYear()+"-"+pad(date.getUTCMonth()+1)+"-"+pad(date.getUTCDate())}
