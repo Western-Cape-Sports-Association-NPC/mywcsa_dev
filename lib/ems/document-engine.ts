@@ -68,3 +68,60 @@ export function exportWcdaDraftPdf(title:string,body:string,reference:string){
  for(const paragraph of body.split("\n")){const lines=pdf.splitTextToSize(paragraph||" ",width) as string[];for(const line of lines){if(y>254){footer();pdf.addPage();page++;header();y=60;}pdf.text(line,left,y);y+=5.5;}y+=2;}
  footer();pdf.save("WCDA-"+reference.replace(/[^A-Za-z0-9-]/g,"-")+"-DRAFT.pdf");
 }
+
+export function exportWcdaEndorsementPdf(event:EmsEvent,reference:string){
+ const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+ const left=17,right=193,width=right-left;
+ const navy:[number,number,number]=[0,20,132];
+ const ink:[number,number,number]=[35,52,79];
+ pdf.setFillColor(...navy);pdf.rect(0,0,210,39,"F");
+ pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(14);
+ pdf.text("WESTERN CAPE DEVELOPMENT AUTHORITY",left,15);
+ pdf.setFontSize(9);pdf.text("MYWCDA EVENTS  |  ENDORSEMENT & GOVERNANCE",left,23);
+ pdf.setFontSize(17);pdf.text("EVENT ENDORSEMENT RECORD",left,33);
+ pdf.setTextColor(...ink);pdf.setFont("helvetica","normal");pdf.setFontSize(9);
+ pdf.text("CONTROLLED CASE DOCUMENT  •  EMS "+reference, left,48);
+ let y=57;
+ const rows:[string,string][]=[
+  ["EMS CASE REFERENCE",reference],
+  ["EVENT",event.name],
+  ["ORGANISER",event.organiser_name],
+  ["EVENT CATEGORY",event.category||"Not recorded"],
+  ["VENUE",event.venue_name||"Not recorded"],
+  ["VENUE ADDRESS",event.venue_address||"Not recorded"],
+  ["EVENT DATES",event.start_date+" to "+event.end_date],
+  ["REGISTRY STATUS",event.status.replaceAll("_"," ").toUpperCase()],
+  ["ENDORSEMENT STATUS",event.status==="endorsed"?"RECORDED AS ENDORSED":event.status==="rejected"?"NOT ENDORSED — REJECTED":"NOT ENDORSED — NO FINAL DECISION RECORDED"],
+  ["DECISION AUTHORITY",event.decision_by_email||"No decision recorded"],
+  ["DECISION DATE",event.decision_at?date(event.decision_at):"Not recorded"],
+  ["DECISION REASONS",event.decision_reason||"No decision rationale recorded"]
+ ];
+ const labelW=48;
+ for(const [label,value] of rows){
+  pdf.setFont("helvetica","bold");pdf.setFontSize(8);const labelLines=pdf.splitTextToSize(label,labelW-5) as string[];
+  pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);const valueLines=pdf.splitTextToSize(value||"—",width-labelW-7) as string[];
+  const h=Math.max(10,Math.max(labelLines.length,valueLines.length)*4.2+4);
+  pdf.setFillColor(y%2?247:239,y%2?249:244,y%2?253:250);pdf.rect(left,y,width,h,"F");
+  pdf.setDrawColor(211,220,235);pdf.rect(left,y,width,h);
+  pdf.setTextColor(...navy);pdf.setFont("helvetica","bold");pdf.setFontSize(7.5);
+  labelLines.forEach((line,i)=>pdf.text(line,left+3,y+5+i*4));
+  pdf.setTextColor(...ink);pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);
+  valueLines.forEach((line,i)=>pdf.text(line,left+labelW,y+5+i*4));
+  y+=h;
+ }
+ y+=7;
+ pdf.setTextColor(...navy);pdf.setFont("helvetica","bold");pdf.setFontSize(10);pdf.text("ASSESSMENT & CONDITIONS",left,y);y+=6;
+ pdf.setTextColor(...ink);pdf.setFont("helvetica","normal");pdf.setFontSize(8.5);
+ const conditions="Any endorsement remains subject to applicable legislation, municipal and venue requirements, safety obligations, permits, licences and approvals of the relevant competent authorities. This internal endorsement does not replace any statutory approval.";
+ for(const line of pdf.splitTextToSize(conditions,width) as string[]){pdf.text(line,left,y);y+=4.5;}
+ y+=8;
+ pdf.setDrawColor(160,175,200);pdf.line(left,y,right,y);y+=8;
+ pdf.setFont("helvetica","bold");pdf.setFontSize(8);pdf.text("PREPARED BY",left,y);pdf.text("DELEGATED SIGNATORY",105,y);y+=13;
+ pdf.setDrawColor(120,135,160);pdf.line(left,y,left+70,y);pdf.line(105,y,right,y);y+=5;
+ pdf.setFont("helvetica","normal");pdf.setFontSize(7.5);pdf.text("Name / role: ____________________",left,y);pdf.text("Name / authority: ____________________",105,y);y+=9;
+ pdf.setFont("helvetica","bold");pdf.setTextColor(160,55,55);pdf.setFontSize(16);pdf.text("DRAFT — NOT ISSUED",105,270,{align:"center"});
+ pdf.setTextColor(85,99,120);pdf.setFont("helvetica","normal");pdf.setFontSize(7.5);
+ pdf.text("Internal WCDA case record only. Not a permit, statutory authorisation or safety certificate.",left,282);
+ pdf.text("Generated from EMS case data. Verify all entries and supporting evidence before any formal decision.",left,287);
+ pdf.save("WCDA-"+reference.replace(/[^A-Za-z0-9-]/g,"-")+"-ENDORSEMENT-DRAFT.pdf");
+}
