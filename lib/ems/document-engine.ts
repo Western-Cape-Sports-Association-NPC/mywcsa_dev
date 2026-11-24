@@ -182,7 +182,7 @@ export function exportWcdaApprovalLetterPdf(event:EmsEvent,reference:string){
   const cols=[left,left+12,left+72,left+91,left+137,right];
   const headers=["REF","BREACH / NON-COMPLIANCE","LEVEL","WCDA ADMINISTRATIVE RESPONSE","REQUIRED CORRECTIVE ACTION"];
   const drawHeader=()=>{
-   const h=13;pdf.setFillColor(...navy);pdf.rect(left,y,width,h,"F");
+   const h=13;pdf.setFillColor(navy[0],navy[1],navy[2]);pdf.rect(left,y,width,h,"F");
    pdf.setTextColor(255,255,255);pdf.setFont("helvetica","bold");pdf.setFontSize(6.4);
    headers.forEach((v,i)=>pdf.text(pdf.splitTextToSize(v,cols[i+1]-cols[i]-2) as string[],cols[i]+1,y+4));
    y+=h;
