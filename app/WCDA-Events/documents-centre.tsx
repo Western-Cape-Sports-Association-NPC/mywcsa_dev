@@ -75,7 +75,7 @@ export default function DocumentsCentre({actor,events,initialEventId,onUploaded}
    &&(d.file_name+" "+(kinds.find(k=>k[0]===d.document_type)?.[1]||"")).toLowerCase().includes(search.toLowerCase()));
  const eventFor=(id:string)=>events.find(e=>e.id===id);
  return <section className={styles.root}>
-  <header className={styles.heading}><div><span className={styles.overline}>MYWCDA EVENTS · DOCUMENT CONTROL</span><h2>{actor.mode==="staff"?"Official case documents":"Documents & compliance"}</h2><p>Attach supporting evidence to an authorised event case. Files are stored privately and are not publicly accessible.</p></div><button type="button" onClick={()=>void refresh()} disabled={busy||loading}>↻ Refresh</button></header>
+  <header className={styles.heading}><div><span className={styles.overline}>MYEVENTDESK · DOCUMENT CONTROL</span><h2>{actor.mode==="staff"?"Official case documents":"Documents & compliance"}</h2><p>Attach supporting evidence to an authorised event case. Files are stored privately and are not publicly accessible.</p></div><button type="button" onClick={()=>void refresh()} disabled={busy||loading}>↻ Refresh</button></header>
   {canArchive&&!archiveEnabled&&<p className={styles.help}><strong>Secure evidence storage is active.</strong> The separate SharePoint archive has not yet been approved for application access. You can still upload, preview, download and classify case evidence here.</p>}
   {error&&<p role="alert" className={styles.error}>{error}</p>}
   {message&&<p role="status" className={styles.success}>{message}</p>}
