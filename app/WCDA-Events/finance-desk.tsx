@@ -81,7 +81,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
   const money=(v:string)=>/^\d+(\.\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0;
   const labels={eventFee:"Event fee",penalty:"Penalty / compliance charge",adminFee:"Administration fee",inspection:"Inspection / assessment fee",lateFee:"Late application fee"} as const;
   const lines:string[]=[];
-  for(const key of Object.keys(labels) as Array<keyof typeof items>){
+  for(const key of Object.keys(labels) as Array<keyof typeof labels>){
    const item=items[key];if(!item.on)continue;
    const value=money(item.amount);if(value<100){setError("Enter at least R1.00 for every selected charge.");return;}
    const detail=key==="penalty"?" — "+item.code+" "+item.reason.trim():"";
@@ -91,7 +91,7 @@ export default function FinanceDesk({actor,events}:{actor:EmsActor;events:EmsEve
   const discount=items.discount.on?money(items.discount.amount):0;
   if(items.discount.on&&discount<1){setError("Enter a valid discount amount.");return;}
   if(items.discount.on)lines.push("Approved discount | -"+rand(discount));
-  const gross=(Object.keys(labels) as Array<keyof typeof items>).reduce((n,k)=>n+(items[k].on?money(items[k].amount):0),0);
+  const gross=(Object.keys(labels) as Array<keyof typeof labels>).reduce((n,k)=>n+(items[k].on?money(items[k].amount):0),0);
   const total=gross-discount;
   if(total<100||total>100000000){setError("Select charges and ensure the final total is between R1.00 and R1,000,000.00.");return;}
   const note=description.trim()? "\nNote: "+description.trim():"";
