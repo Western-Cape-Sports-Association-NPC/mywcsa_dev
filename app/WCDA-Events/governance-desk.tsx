@@ -2,7 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from "react";
 import type {EmsActor,EmsEvent} from "@/lib/ems/types";
-import {exportWcdaDraftPdf} from "@/lib/ems/document-engine";
+import {exportWcdaDraftPdf,exportWcdaEndorsementPdf} from "@/lib/ems/document-engine";
 import styles from "./governance-desk.module.css";
 import CertificateComposer from "./certificate-composer";
 
@@ -41,7 +41,7 @@ const allowedModules:Record<string,string[]>={
  correspondence:["operations","manager","super_admin","executive","registrar","assessor","compliance","finance","certificates"],
 };
 const formats:[string,string][]=[
- ["endorsement_letter","Endorsement letter"],
+ ["endorsement_letter","Event endorsement record (tabular)"],
  ["approval_letter","Approval correspondence"],
  ["certificate","Certificate draft"],
  ["memorandum","Memorandum"],
@@ -149,32 +149,41 @@ export default function GovernanceDesk({actor,eventId,reference,section,event,on
    },
   };
   const template=profile[kind]||profile.other;
-  setDraftTitle(template.title+" — "+event.name);
-  setDraftBody([
-   template.opening,
+  setDraftTitle((kind==="endorsement_letter"?"EVENT ENDORSEMENT & ASSESSMENT RECORD":template.title)+" — "+event.name);
+  setDraftBody(kind==="endorsement_letter"?[
+   "CONTROLLED EVENT ENDORSEMENT RECORD — DRAFT / NOT ISSUED",
    "",
-   "EMS case reference: "+reference,
-   "Event name: "+event.name,
-   "Organiser: "+event.organiser_name,
-   "Recorded venue: "+event.venue_name,
-   "Proposed dates: "+event.start_date+" to "+event.end_date,
+   "CASE PARTICULARS",
+   "EMS reference | "+reference,
+   "Event | "+event.name,
+   "Organiser | "+event.organiser_name,
+   "Category | "+event.category,
+   "Venue | "+event.venue_name,
+   "Venue address | "+(event.venue_address||"Not recorded"),
+   "Event dates | "+event.start_date+" to "+event.end_date,
+   "Registry status | "+event.status,
    "",
-   "ASSESSMENT / EVENT CONTEXT",
-   "[Insert the relevant recorded facts, purpose of the document and case history.]",
+   "ENDORSEMENT CONTROL",
+   "Internal endorsement status | "+(event.status==="endorsed"?"Recorded as endorsed":event.status==="rejected"?"Not endorsed — rejected": "Not endorsed — pending / not recorded"),
+   "Decision authority | "+(event.decision_by_email||"No decision recorded"),
+   "Decision date | "+(event.decision_at||"Not recorded"),
+   "Decision reasons | "+(event.decision_reason||"No decision rationale recorded"),
    "",
-   "VERIFICATION AND REQUIRED ACTION",
-   template.notes,
+   "ASSESSMENT AND CONDITIONS",
+   "Assessment summary | [Complete from verified checklist, risk assessment and supporting evidence]",
+   "Conditions | Subject to applicable legislation, municipal and venue requirements, safety obligations, permits, licences and approvals of competent authorities.",
+   "Evidence reviewed | [List verified document names / references; do not assume completeness]",
    "",
-   "Supporting documents reviewed: [List official evidence references; do not assume they are complete]",
-   "Prepared by: "+actor.name+" (internal draft)",
-   "Signatory: [Not assigned or verified]",
-   "Issue date: [Not issued]",
+   "Prepared by | "+actor.name,
+   "Delegated signatory | Not assigned / not verified",
+   "Issue date | Not issued",
    "",
-   "DRAFT — NOT ISSUED. Not a permit, signed approval or issued certificate."
-  ].join("\n"));
+   "DRAFT — NOT ISSUED. Internal WCDA record only; not a municipal permit, statutory authorisation, safety certificate or proof of approval."
+  ].join("\n"):[template.opening,"","EMS case reference: "+reference,"Event name: "+event.name,"Organiser: "+event.organiser_name,"Recorded venue: "+event.venue_name,"Proposed dates: "+event.start_date+" to "+event.end_date,"","ASSESSMENT / EVENT CONTEXT","[Insert verified case facts.]","","VERIFICATION AND REQUIRED ACTION",template.notes,"","Supporting documents reviewed: [List verified evidence references]","Prepared by: "+actor.name+" (internal draft)","Signatory: [Not assigned or verified]","Issue date: [Not issued]","","DRAFT — NOT ISSUED. Not a permit, signed approval or issued certificate."].join("\n"));
   setNotice("The "+nice(kind)+" template is ready to edit. Review all bracketed fields before saving.");
  }
  function exportDraft(d:Draft){
+  if(d.kind==="endorsement_letter"){exportWcdaEndorsementPdf(event,reference);return;}
   exportWcdaDraftPdf(d.title,d.body,reference);
  }
  async function copyDraft(d:Draft){
