@@ -137,7 +137,7 @@ export default function CertificateComposer({actor,event,onSaved}:{actor:EmsActo
    <div className={styles.paperWrap}>
     <article className={styles.sheet} aria-label="Unissued certificate preview">
       <div className={styles.borderOuter}><div className={styles.borderMid}><div className={styles.borderInner}>
-       <div className={styles.identity}><span className={styles.dome} aria-hidden="true">◈</span><div><strong>WESTERN CAPE</strong><b>DEVELOPMENT AUTHORITY</b><small>EVENT & SAFETY DEPARTMENT</small></div><span className={styles.triLogo} aria-hidden="true"><i/><i/><i/></span></div>
+       <div className={styles.identity}><img className={styles.primaryLogo} src="/api/wcda-events/certificate-logo" alt="WCDA ESD official certificate logo" /></div>
        <div className={styles.certificateTitle}><h1>Certificate</h1><h2>OF ENDORSEMENT & APPROVAL</h2></div>
        <div className={styles.eventIdentity}><p>THIS CERTIFICATE IS HEREBY ISSUED TO</p><h3>{event.name.toUpperCase()}</h3><p>ORGANISER: <strong>{event.organiser_name.toUpperCase()}</strong></p></div>
        <table className={styles.schedule}><thead><tr><th>DATE & LOCATION:</th><th>TIME / DURATION:</th></tr></thead><tbody>{rows.map(r=><tr key={r.key}><td><strong>{shownDate(r.date)}</strong> – {r.venue}</td><td>{formatClock(r.start)} – {formatClock(r.end)}</td></tr>)}</tbody></table>
