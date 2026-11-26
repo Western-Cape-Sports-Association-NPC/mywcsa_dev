@@ -136,7 +136,7 @@ export default function CertificateComposer({actor,event,onSaved}:{actor:EmsActo
    </div>
    <div className={styles.paperWrap}>
     <article className={styles.sheet} aria-label="Unissued certificate preview">
-      <div className={styles.borderOuter}><div className={styles.borderMid}><div className={styles.borderInner}>
+      <div className={styles.borderBackground} aria-hidden="true"><img src="/api/wcda-events/certificate-border" alt="" /></div>
        <div className={styles.identity}><img className={styles.primaryLogo} src="/api/wcda-events/certificate-logo" alt="WCDA ESD official certificate logo" /></div>
        <div className={styles.certificateTitle}><h1>Certificate</h1><h2>OF ENDORSEMENT & APPROVAL</h2></div>
        <div className={styles.eventIdentity}><p>THIS CERTIFICATE IS HEREBY ISSUED TO</p><h3>{event.name.toUpperCase()}</h3><p>ORGANISER: <strong>{event.organiser_name.toUpperCase()}</strong></p></div>
@@ -146,7 +146,6 @@ export default function CertificateComposer({actor,event,onSaved}:{actor:EmsActo
        <div className={styles.signature}><span>S Morgan</span><strong>MRS S MORGAN</strong><b>REGISTRAR: EVENTS & SAFETY</b><p>DATE: <strong>{issueDate(issue)}</strong></p></div>
        <div className={styles.stamp} style={stampStyle}><strong>WESTERN CAPE DEVELOPMENT AUTHORITY</strong><small>An initiative owned by Western Cape Sports Association</small><p>7 BREE STREET, CAPE TOWN, 8001<br/>EMAIL: mail-wcda@wcsports.co.za<br/>T: (083) 273-1459 F: (021) 896 9021<br/><b>Chair:</b> T. Williams ; <b>Admin:</b> M. Leibrandt</p><small>WES-KAAPSE ONTWIKKELINGSOWERHEID</small></div>
        <div className={styles.draftWatermark}>DRAFT — NOT ISSUED</div>
-      </div></div></div>
       <footer>{verificationFooter}</footer>
     </article>
     <p className={styles.disclaimer}>Preview replicates the structural format and wording rules. The original DOCX remains the exact source for artwork and typography. This preview does not create a permit, endorsement, certificate number or official issuance.</p>
