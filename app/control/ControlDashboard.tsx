@@ -265,7 +265,7 @@ export default function ControlDashboard({ initial }: { initial:Data }) {
             <tbody>{data.operators.map(p=><tr key={p.email}>
               <td><strong>{p.display_name||p.email}</strong></td><td>{p.full_name||"—"}</td><td>{p.email}</td>
               <td>{p.department||"—"}</td><td>{p.designation||"—"}</td>
-              <td><span className={s.tag}>{p.department==="Communications"&&p.role==="viewer"?"Communications (read-only)":roleNames[p.role]||p.role}</span></td>
+              <td><span className={s.tag}>{p.department==="Communications"&&p.role==="viewer"?"Communications (read-only)":p.department==="Communications"&&p.role==="servicedesk"?"Communications (operator)":roleNames[p.role]||p.role}</span></td>
             </tr>)}</tbody></table></div>:
           <Empty text="No active Command Centre operators are registered."/>}
         </Panel>}
@@ -280,7 +280,7 @@ export default function ControlDashboard({ initial }: { initial:Data }) {
           action={<button className={s.primarySmall} onClick={()=>setModal({action:"set_operator"})}>+ Assign operator</button>}>
           <p className={s.disclosure}>Only verified Microsoft Entra staff accounts at wcsports.co.za may access this workspace. Roles never grant PERSAL access or Microsoft tenant administrative privileges.</p>
           {data.operators.length?<div className={s.tableScroll}><table className={s.table}><thead><tr><th>Operator</th><th>Command role</th><th>Access</th><th>Granted by</th><th/></tr></thead><tbody>
-            {data.operators.map(o=><tr key={o.email}><td><strong>{o.email}</strong></td><td>{roleNames[o.role]}</td><td><Tag value={o.active?"active":"revoked"}/></td><td>{o.granted_by}</td><td><button className={s.tableAction} onClick={()=>setModal({action:"set_operator",operator:o})}>Edit ↗</button></td></tr>)}</tbody></table></div>:
+            {data.operators.map(o=><tr key={o.email}><td><strong>{o.display_name||o.email}</strong><small>{o.email}</small></td><td>{o.department==="Communications"&&o.role==="servicedesk"?"Communications (operator)":roleNames[o.role]||o.role}</td><td><Tag value={o.active?"active":"revoked"}/></td><td>{o.granted_by}</td><td><button className={s.tableAction} onClick={()=>setModal({action:"set_operator",operator:o})}>Edit ↗</button></td></tr>)}</tbody></table></div>:
             <Empty text="No command operator grants exist. A designated founding director must be securely authorised before this console is usable."/>}
         </Panel>}
         <footer className={s.footer}><span>© {new Date().getFullYear()} Western Cape Sports Association NPC · MyWCSA GovApps</span><span>ServiceDesk · e-Innovation · BiT · ICT</span></footer>
