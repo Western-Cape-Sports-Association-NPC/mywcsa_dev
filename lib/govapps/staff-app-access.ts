@@ -85,7 +85,8 @@ export async function authorisedStaffApps(user: {email?:string|null;authProvider
   if (registry.length) allowed.add("ams");
   // Both Entra and approved staff-password sessions require an active EMS appointment.
   // Fallback password sessions have already passed live enablement and rotation checks above.
-  if (wcda.length) allowed.add("wcda-events");
+  // Communications is an active GovApps control operator and is authorised to enter WCDA Events, matching Christiaan's launcher-level app access. This does not grant PERSAL or bypass EMS workflow permissions.
+  if (wcda.length || (command.length > 0 && email === "communications@wcsports.co.za")) allowed.add("wcda-events");
   // PERSAL stays Entra-bound even for users with a separate password login.
   if (user?.authProvider === "microsoft-entra-id" && persal) allowed.add("persal");
   for (const entry of special) {
