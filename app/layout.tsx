@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import GovAppsServiceRibbon from "./govapps-service-ribbon";
 import "./globals.css";
 
 const govAppsIconUrl = "/govapps-favicon.png?v=20261017";
@@ -27,7 +26,6 @@ export default function RootLayout({
   return (
     <html lang="en-ZA">
       <body>
-        <GovAppsServiceRibbon />
         {children}
       </body>
     </html>
